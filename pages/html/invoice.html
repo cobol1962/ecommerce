@@ -1576,67 +1576,7 @@ setTimeout(function() {
 
 
 function showProductInfo(obj) {
-    var dd = {
-        itemid: $(obj).attr("itemid")
-    }
-    $("#productDetail").attr("item", $(obj).attr("itemid"));
-    var inm = $(obj).find("[itemname]").attr("itemname");
-    var pd = $(obj).find("[compnamesdiv]").clone();
-    var mn = $(obj).find("[money]").clone();
-    api.call("getItemById", function(res) {
-        var itemid = $(obj).attr("itemid");
-        var data = res;
-        $("#title").html(data.productName + "<br /> " + data.CompName);
-        var img = $("<img src='http://85.214.165.56:81/catalog/images/" + data.ImageName + "' style='height:auto;'/>");
-        img.removeAttr("style");
-        $("#modalImage").find("img").remove();
-        img.css({
-            height: "auto",
-            maxHeight: 90
-        })
-
-        img.appendTo($("#modalImage"));
-        var obj = {
-            itemid: data.ItemID
-        }
-        $("#pDetails").html("");
-        pd.css({
-          display: "block",
-
-        })
-        $("<strong style='font-size:15px;'>" + inm + "</strong>").appendTo($("#pDetails"));
-        pd.appendTo($("#pDetails"));
-
-        mn.appendTo($("#pDetails"));
-        $('#item_serials_body').find("tr").unbind('click');
-        $("#item_serials_body").find("tr").remove();
-        api.call("getSerials", function(res) {
-          console.log(res);
-            $.each(res, function() {
-              var ths = this;
-              var cname = (data.CompName === undefined || data.CompName == null) ? "" : data.CompName;
-                if ($("#invoiceBody").find("[serialno='" + this.SerialNo + "']").length == 0) {
-                    $("<tr><td style='display:none;'>" + data.ItemID + "</td><td style='display:none;'>" + cname.replace(/,/g,"<br />") + "</td><td>" + this.SerialNo + "</td><td style='text-align:left;'>" + this.SerialName + "<br />"  + this.Warehouse + "</td><td>" + this.OnhandQnt + "</td></tr>").appendTo($("#item_serials_body"));
-                }
-            })
-            $('.colordesc').tooltip("hide");
-            $('.compname').tooltip("hide");
-
-            $("#productDetail").modal("show");
-            $("#ati").prop("disabled", true)
-            $('#item_serials_body').find("tr").bind('click', function() {
-                if ($(this).hasClass("selected")) {
-                    $(this).removeClass("selected");
-                    $("#ati").prop("disabled", true)
-                } else {
-                    $('#item_serials_body').find("tr").removeClass("selected");
-                    $(this).addClass("selected");
-                    $("#ati").prop("disabled", false)
-                }
-            })
-        }, obj, {}, {});
-    }, dd, {}, {});
-
+    loadPage("details", true, false,  {}, $(obj).attr("itemid"))
 }
 
 function chackAddToInvoice() {

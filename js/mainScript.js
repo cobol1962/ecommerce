@@ -61,9 +61,9 @@ function checkLogin() {
 }
 function writeLogout() {
   userData.activity = "Logout";
-  api.call("createlog", function() {
+/*  api.call("createlog", function() {
       ws.send(JSON.stringify({action: "reloadadmin"}))
-  }, userData, {}, {})
+  }, userData, {}, {})*/
 }
 var ws = null;
 function resizeCanvas() {
@@ -77,15 +77,11 @@ function resizeCanvas() {
 $(document).ready(function() {
   window.addEventListener('beforeunload', function(event) {
     userData.activity = "Close application";
-    api.call("createlog", function() {
+/*    api.call("createlog", function() {
         ws.send(JSON.stringify({action: "reloadadmin"}))
-    }, userData, {}, {});
+    }, userData, {}, {});*/
   });
-  try {
-    AndroidFullScreen.immersiveMode(function() {}, function() {});
-  } catch(err) {
 
-  }
 var canvas = document.getElementById('signature-pad');
 
 var signaturePad = new SignaturePad(canvas, {
@@ -132,10 +128,11 @@ setTimeout(function() {
           userData.emplid = sp.EmplID;
           userData.name = sp.Employee;
         }
+
         userData.activity = "Enter application";
-          api.call("createlog", function(res) {
+      /*    api.call("createlog", function(res) {
               ws.send(JSON.stringify({action: "reloadadmin"}))
-          }, userData, {}, {});
+          }, userData, {}, {});*/
       });
 
     }, 1000)
@@ -151,7 +148,7 @@ setTimeout(function() {
       StatusBar.hide();
     }
 /*if (app) { */
-  try {
+  /* try {
     if (app && localStorage.sp !== undefined) {
       document.addEventListener('deviceready', function(){
         cordova.getAppVersion.getVersionNumber().then(function (version) {
@@ -214,7 +211,12 @@ $('#discountApproved').on('show.bs.modal', function () {
   alert(window.location.hash)
   loadPage(window.location.hash.substring(1));*/
   if (window.location.hash != "") {
-      window.location.hash = "";
+      if (window.location.hash.indexOf("?") == -1) {
+        window.location.hash = "";
+      } else {
+
+        loadPage("details", true, false,  {}, window.location.hash.split("?")[1])
+      }
     } else {
       loadPage("homepage");
     }
@@ -377,23 +379,28 @@ var pageUrls = {
   invoices: "invoices",
   customers: "customers",
   addproduct: "addproduct",
-  search: "search"
+  search: "search",
+  details: "details"
 }
 function locationHashChanged() {
   $(".modal").modal("hide");
   if (location.hash == "") {
     loadPage("homepage");
   }
-  if (firstLoad) {
+  if (firstLoad && location.hash.indexOf("details") == -1) {
+
     firstLoad = false;
     loadPage1("homepage");
     return;
   }
-  var p = location.hash.substring(1);
+  if (firstLoad && location.hash.indexOf("details") > -1) {
+    firstLoad = false;
+  }
+  var p = location.hash.substring(1).split("?")[0];
   for (var k in pageUrls) {
     if (pageUrls[k] == p) {
       if (fromFunc) {
-        loadPage1(po.page, po.addTopages, po.backtocart, po.search);
+        loadPage1(po.page, po.addTopages, po.backtocart, po.search, po.query);
       } else {
         loadPage1(k);
       }
@@ -405,20 +412,29 @@ function locationHashChanged() {
 var po = {};
 var fromFunc = false;
 window.onhashchange = locationHashChanged;
-function loadPage(page, addToPages = true, backtocart = false, search = {}) {
+function loadPage(page, addToPages = true, backtocart = false, search = {}, query = "") {
 
 //  window.parent.postMessage("setState#" + page, "*");
 //  window.history.replaceState({}, pageUrls[page], pageUrls[page]);
 if (page != "addproduct") {
   $("#addproducticon").hide();
 }
+
     po.page = page;
     po.addTopages = addToPages;
     po.backtocart = backtocart;
     po.search = search;
+    po.query = query;
     fromFunc = true;
-    window.location.hash = pageUrls[page];
+    if (page != "details") {
+      window.location.hash = pageUrls[page];
+    } else {
+      window.location.hash = pageUrls[page] + "?" + query;
+      locationHashChanged();
+    }
+
 }
+
 function loadPage1(page, addToPages = true, backtocart = false, search = {}) {
 
   if (!firstLoad && page != "homepage") {
@@ -433,6 +449,7 @@ function loadPage1(page, addToPages = true, backtocart = false, search = {}) {
   if (page != "login") {
     currentPage = page;
   }
+
   $("#content").css({
     top: 50
   })
@@ -982,23 +999,23 @@ $( "#spf" ).validate({
         userData.emplid = res.sp.EmplID;
         userData.name = res.sp.Employee;
         userData.activity = "Login";
-      
+
         localStorage.showRoom = $("#showroomid").val();
         localStorage.showRoomName =$("#showroomname").val();
 
         localStorage.salePersonName = $("#salespersonname").val();
-        if (app && localStorage.sp !== undefined) {
+    /*    if (app && localStorage.sp !== undefined) {
             cordova.getAppVersion.getVersionNumber().then(function (version) {
               ws = new ReconnectingWebSocket(version);
             });
         } else {
             ws = new ReconnectingWebSocket("0.0.0");
-        }
+        }*/
         userData.activity = "Login";
         setTimeout(function() {
-              api.call("createlog", function () {
+            /*  api.call("createlog", function () {
                   ws.send(JSON.stringify({action: "reloadadmin"}))
-              }, userData, {}, {});
+              }, userData, {}, {});*/
         }, 3000);
         showModal({
           type: "ok",
