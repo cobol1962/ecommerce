@@ -37,7 +37,7 @@ function resetLocalStorage() {
 }
 function checkLogin() {
 
-    if (localStorage.sp !== undefined) {
+  /*  if (localStorage.sp !== undefined) {
         $("[login]").hide();
         $("[logout]").show();
         var sp = $.parseJSON(localStorage.sp);
@@ -57,7 +57,7 @@ function checkLogin() {
           loadPage("homepage");
         }
     //    return false;
-    }
+  }*/
 }
 function writeLogout() {
   userData.activity = "Logout";
@@ -576,65 +576,7 @@ function toDataURL(url, callback) {
   xhr.responseType = 'blob';
   xhr.send();
 }
-function addToInvoice(row) {
 
-  if (shoppingCartContent[row["SerialNo"]] !== undefined && !row["SerialNo"].indexOf("9999") == 0) {
-    showModal({
-      title: "Item with serial " + row["SerialNo"] + " already in cart.",
-      confirmButtonText: "CONTINUE",
-      showCancelButton: false
-    })
-    return;
-  }
-  if (row["SerialNo"].indexOf("9999") == 0) {
-    while (shoppingCartContent[row["SerialNo"]] !== undefined) {
-      row["SerialNo"] = (parseInt(row["SerialNo"]) + 1).toString();
-
-    }
-  }
-  //alert(row["Discount"])
-  if (row["Discount"] == "0") {
-    row["Discount"] = "0%";
-  }
-  if (row["Discount"] == "0%") {
-    var realPrice = row["SalesPrice"];
-    row["discountLocked"] = false;
-  } else {
-    var pr = parseFloat(row["SalesPrice"]);
-    var ds = parseFloat(row["Discount"]);
-    var realPrice = pr - ((pr / 100) * ds);
-    row["discountLocked"] = true;
-  }
-  row["additionalDiscount"] = "";
-  row["startRealPrice"] = realPrice;
-  row["realPrice"] = realPrice;
-  row["productName"] += "<br />" + row["CompName"];
-  console.log(row);
-  shoppingCartContent[row["SerialNo"]] = row;
-  $("#lblCartCount").html(" " + Object.keys(shoppingCartContent).length);
-  $("#toggleShoppigCart").removeClass("empty");
-
-  /*if ($("#invoiceBody").find("[serialno='" + row.SerialNo + "']").length > 0) {
-    swal({
-      type: "error",
-      text: "Items with Serial No " + row.SerialNo + " already in Bag"
-    })
-    return false;
-  }
-  var exr = $("#currency").find("option:selected").attr("rate");
-
-  var tr = "<tr serialno='" + row.SerialNo + "' productdata><td style='padding: 5px;'>" + row["imageURL"] + "</td>";
-  tr += "<td colspan='3'>";
-  tr += "<p style='max-width:100%;word-break:break-word;'>" + row["productName"] + "</p></td></tr>";
-  tr += "<tr invoicedata>";
-  tr += "<td style='text-align: right;' euro='" + row["SalesPrice"] + "' value='" + row["SalesPrice"] + "' price>" + (parseFloat(row["SalesPrice"]) * 1).toLocaleString('nl-NL', { style: 'currency', currency:  "EUR"  }) + "</td>";
-  tr += "<td style='text-align: right;padding-right:3px;'><input discount style='width:50px;text-align:right;' value='" + row["Discount"] + "%' type='text' onchange='recalculateInvoice(this);' /></td>";
-  tr += "<td style='text-align: right;' total realvalue='" + parseFloat(row["SalesPrice"]) + "'>" + parseFloat(row["SalesPrice"]).toLocaleString('nl-NL', { style: 'currency', currency: "EUR" }) + "</td>";
-  tr += "<td style='width:30px;text-align:right;' onclick='deleteRow(this);'><div style='max-width:30px;'><a href='#'><i class='fa fa-trash fa-2x m-r-5'></i></a></div></td></tr>";
-  $(tr).appendTo($("#invoiceBody"));
-  recalculateInvoice();
-*/
-}
 function recalculateInvoice(obj) {
   var invoicetotal = 0;
   var total = 0;
@@ -1528,17 +1470,17 @@ showModal = function(options = {}) {
   }
   if (options.type === undefined) {
     $("#m_header").css({
-      backgroundImage: "url(/images/crown.png)"
+      backgroundImage: "url(/ecommerce/images/crown.png)"
     })
   }
   if (options.type == "error") {
     $("#m_header").css({
-      backgroundImage: "url(/images/error.png)"
+      backgroundImage: "url(/ecommerce/images/error.png)"
     })
   }
   if (options.type == "ok") {
     $("#m_header").css({
-      backgroundImage: "url(/images/green_checkbox_only.png)"
+      backgroundImage: "url(/ecommerce/images/green_checkbox_only.png)"
     })
   }
   if (options.title !== undefined) {

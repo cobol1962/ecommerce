@@ -1,16 +1,11 @@
 
 <div style="display:none;"  id="fullshoppingcart">
   <div style="text-align:center;width;100%;">
-    <img onclick="loadedPages.shoppingCart.discountClickedFired();" style="height:100px;margin:20px auto;" src="http://85.214.165.56:81/coster/www/images/cart_icon_full.png" />
+    <img  style="height:100px;margin:20px auto;" src="http://85.214.165.56:81/coster/www/images/cart_icon_full.png" />
     <br /><span spdiscount2 style="font-size:13px;display:none;">Discount approved by: </span><span spdiscount2 style="font-size:13px;display:none;" id="dap"></span>
   </div>
   <div id="items" style="width:100%;padding-right:10px;"></div>
   <div style="text-align:center;width;100%;margin-top:10px;">
-    <span><b>Summary</b></span>
-    <br />
-    <select id="countries" class="form-control" style="margin-left:10px;min-width:100%;margin-right:10px;">
-      <option></option>
-    </select>
     <div refundcontainer id="refundContainer" class="pretty p-switch p-fill" style="margin-left:10px;display:none;font-size:17px;float:left;margin-top:10px;clear:both;">
       <input type="checkbox" checked id="directRefund" onchange="loadedPages.shoppingCart.calculateRefund();"/>
       <div class="state p-success">
@@ -21,7 +16,7 @@
       <label refundcontainer id="dfw" style="display:none;float:left;margin-left:5px;margin-top:10px;" onclick="loadedPages.shoppingCart.checkCode();" id="dRefund">VAT Refund</label>
 
       <br />
-    <div id="total_div" style="width:100px;min-width:100%;float:right;text-align:right;background:white;padding:10px;font-size:15px;">
+    <div id="total_div" style="display:none;width:100px;min-width:100%;float:right;text-align:right;background:white;padding:10px;font-size:15px;">
       <table style="margin-right:0px;width:220px;table-layout:auto;float:right;">
         <tr><td style="text-align:left;"><span id="subtotal">Subtotal: </span></td><td style="text-align:right;"><span style="min-width:75px;width:75px;"></span></td></tr>
         <tr>
