@@ -810,10 +810,11 @@ $(document).ready(function() {
         var node = this;
         var data = $.parseJSON($(this).attr("data"));
         console.log(data);
-        $("#product_image").attr("src", $(node).find("img").eq(0).attr("src"));
+        loadPage("details", true, false,  {}, data["ItemID"])
+      /*  $("#product_image").attr("src", $(node).find("img").eq(0).attr("src"));
         $("#title").html(data["productName"] + " " + parseFloat(data["SalesPrice"]).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }));
         $("#productDetail").attr("itemid", data["ItemID"]);
-        $("#productDetail").modal("show");
+        $("#productDetail").modal("show");*/
       })
 });
 function collectFilters(fire = false) {
@@ -1138,6 +1139,9 @@ function findID(id) {
   yadcf.exFilterColumn(dTable, [[2, $("#flitemid").val()]]);
   $("#itemidSelected").html($("#flitemid").val());
    selectedFilters();
+}
+function showProductInfo(obj) {
+    loadPage("details", true, false,  {}, $(obj).attr("itemid"))
 }
 </script>
 <style>

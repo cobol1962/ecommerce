@@ -201,7 +201,7 @@ loadedPages.shoppingCart = {
             html += "<div style='margin-top:-22px;float:right;text-align:right;'><span style='color:red;'>";
           }
           html += "<b>" + obj.Discount + "</b>&nbsp;</span><span style='text-decoration:line-through;'>" + (parseFloat(obj.SalesPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span>";
-          html += "<br /><span realvalue='" + parseInt(obj.realPrice) + "'>" + (parseInt(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
+          html += "<br /><span realvalue='" + parseInt(obj.realPrice) + "'>" + (parseInt(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div></div>";
         //  html += '</div>';
         } else {
           if (!obj.discountLocked) {
@@ -217,14 +217,6 @@ loadedPages.shoppingCart = {
 
         if (obj.Discount == "" || obj.Discount == "%") {
           html += "<div style='float:right;color:black;'><span realvalue='" + parseInt(obj.realPrice) + "'>" + (parseInt(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-    //      html += "<br /><div style='float:right;'><label style='color:black;font-size:15px;'>Quantity:&nbsp;</label><input style='text-align:right;width:70px;' quantity type='number' itemid='" + obj.ItemID + "' value='" + obj.quantity + "' />";
-
-        } else {
-        /*  if (obj.additionalDiscount == "") {
-            html += "<div style='float:right;'><br /><span realvalue='" + parseFloat(obj.realPrice) + "'>" + (parseFloat(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-          } else {
-            html += "<div style='float:right;'><span style='text-decoration:line-through;' value='" + parseFloat(obj.startRealPrice) + "'>" + (parseFloat(obj.startRealPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-          }*/
         }
         ttl1 += obj.toPay;
         html += "<br /><div style='float:right;color:black;font-size:13px;'><label style='color:black;font-size:15px;'>Total:&nbsp;</label>" + parseInt(obj.toPay).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</div>";
@@ -493,37 +485,8 @@ loadedPages.shoppingCart = {
   },
   checkIsLogged: function() {
 
-    if (localStorage.sp === undefined) {
-      $("#login").modal("show");
-    } else {
-
-      if (loadedPages.shoppingCart.approvedRequested) {
-        if ($("#dapproved").val() == "") {
-           $("#discountApproved").modal("show");
-             return false;
-        }
-
-      }
-      localStorage.invoiceDiscount = $("#masterdiscount").val();
-      localStorage.directRefund = (($("#dfw").html() == "Direct Refund") ? "1" : "0");
-      localStorage.total_div = $("#total_div")[0].innerHTML;
-
-      $("[spdiscount1]").val($("#masterdiscount").val());
-
-      if (localStorage.directRefund == "1") {
-
-        localStorage.toBePaid =   $("[rfnd]").val();
-      } else {
-        localStorage.toBePaid =   $("[nrfnd]").val();
-      }
-      localStorage.generalDiscount = $("#masterdiscount").val();
-      try {
-        AndroidFullScreen.immersiveMode(function() {}, function() {});
-      } catch (err) {
-
-      }
       loadPage("checkout");
-    }
+
   },
   discountClickedFired: function() {
     loadedPages.shoppingCart.discountClicked = !loadedPages.shoppingCart.discountClicked;

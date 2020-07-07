@@ -2,32 +2,62 @@ loadedPages.details = {
   itemid: "",
   data: {},
   quantity: 1,
+  diamond: 0,
   initialize: function() {
     $("#currency").unbind("change");
     $("#currency").bind("change", function() {
       loadedPages.details.drawMoney();
     });
-    loadedPages.details.draw();
+    loadedPages.details.itemid = window.location.hash.substring(1).split("?")[1];
+    var dd = {
+        itemid: loadedPages.details.itemid
+
+    }
+    api.call("checkIsDiamond", function(res) {
+      loadedPages.details.diamond = res.n;
+      loadedPages.details.draw(res.n);
+    }, dd, {},{});
+
   },
-  draw: function() {
+  draw: function(diamond) {
     loadedPages.details.itemid = window.location.hash.substring(1).split("?")[1];
     if (shoppingCartContent[loadedPages.details.itemid] !== undefined) {
       loadedPages.details.quantity = shoppingCartContent[loadedPages.details.itemid].quantity;
     }
-    var dd = {
-        itemid: loadedPages.details.itemid
+    if (diamond > 0) {
+        var dd = {
+            itemid: loadedPages.details.itemid,
+            diamonds: 1
+        }
+    } else {
+      var dd = {
+          itemid: loadedPages.details.itemid
+
+      }
     }
     api.call("getItemById", function(res) {
 
       var data = res;
       loadedPages.details.data = res;
-      $("#title").html(data.SerialName);
+      if (loadedPages.details.diamond == "0") {
+        $("#title").html(data.SerialName);
+      } else {
+          $("#title").html("Diamond");
+      }
+
+      if (data.ImageName == "") {
+        data.ImageName = "crown.png";
+      }
       $("#itemImage").attr("src", "http://85.214.165.56:81/catalog/images/" + data.ImageName);
       var str = "";
 
       api.call("getItemDescription", function(res) {
         if (data.CompName != null) {
+          if (res["qnt"] != "0") {
             str += "<b>Total Stones:</b> " + res["qnt"] + " <br /><b>Total Weight:</b> " + res["weight"] + "crt" + "<br />";
+          } else {
+            str += "<b>Total Weight:</b> " + res["weight"] + "crt" + "<br />";
+          }
             str += res.description;
             $("#description").html(str);
 
@@ -71,13 +101,16 @@ loadedPages.details = {
 
      var data = loadedPages.details.data;
 
+     if (data.ImageName == "") {
+       data.ImageName = "crown.png";
+     }
       var obj = {
           imageURL: "<img style='width:100px;height:auto;' src='http://85.214.165.56:81/catalog/images/" + data.ImageName + "' />",
           img: "<img style='width:250px;height:auto;' src='http://85.214.165.56:81/catalog/images/" + data.ImageName + "' />",
             SerialNo: data.SerialNo,
             ItemID: data.ItemID,
             CompName: $("#composition").html(),
-            productName:  data.SerialName,
+            productName: (loadedPages.details.diamond == "0") ? data.SerialName : "Diamond",
             quantity: loadedPages.details.quantity,
             SalesPrice: parseFloat(data["SalesPrice"]),
             Discount: data["Discount"],

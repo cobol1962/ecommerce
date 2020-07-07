@@ -8,7 +8,8 @@ loadedPages.checkout = {
   documentName: "",
   currentInvoice: "",
   initialize: function() {
- $("#customerForm")[0].reset();
+
+
   api.call("getExcangeRates", function(res) {
     $.each(res, function() {
 
@@ -24,11 +25,7 @@ loadedPages.checkout = {
     var ii = "";
     ii = ((Object.keys(shoppingCartContent).length > 1) ? " items " : " item ");
     $("#itemsinfo").html(Object.keys(shoppingCartContent).length + ii + parseFloat(localStorage.payNoRefund).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }))
-    setTimeout(function() {
-      for (var key in customerInfoData) {
-        $("#customerForm").find("[name='" + key + "']").val(customerInfoData[key]);
-      }
-    }, 2000);
+
   if (localStorage.customerCountry === undefined) {
     api.call("getCountries", function(res) {
       var data = [];
@@ -132,6 +129,14 @@ loadedPages.checkout = {
         $("#refundContainer").hide();
         loadedPages.shoppingCart.calculateRefund();
       });
+      if (localStorage.customer !== undefined) {
+        var c = $.parseJSON(localStorage.customer);
+        for (var k in c) {
+
+          $("#customerForm").find("[name='" + k + "']").val(c[k]);
+        }
+          $("#countries").val(c["countryCode"]).trigger('change');
+      }
     }, {}, {});
     setTimeout(function() {
 
@@ -179,11 +184,6 @@ loadedPages.checkout = {
 
           }
       } );
-      $( "#customerForm" ).find("[name]").bind("change", function() {
-        $.each($( "#customerForm" ).find("[name]"), function() {
-          customerInfoData[this.getAttribute("name")] = this.value;
-        })
-      })
       $.validator.addMethod("countrySelected", function(value, element) {
         var data = $('#countries').select2('data');
         return (data[0].id != "");
@@ -199,19 +199,33 @@ loadedPages.checkout = {
             countries: {
               countrySelected: true
             },
+            email: {
+              required: true,
+              email: true
+            },
             name: {
+              required: true
+            },
+            address1: {
+              required: true
+            },
+            telephone: {
+              required: true
+            },
+            zip: {
+              required: true
+            },
+            city: {
               required: true
             }
           },
           submitHandler: function(form) {
               var obj = {};
-              var tour = $.parseJSON(localStorage.tour);
-              $("#tourNo").val(tour.ProjId);
               $.each($("#customerForm").find("[name]"), function() {
                 obj[$(this).attr("name")] = $(this).val();
               })
               delete obj["countries"];
-
+              delete obj["tourNo"];
               obj["country"] = $("#countries").select2("data")[0].text;
               obj["countryCode"] = $("#countries").select2("data")[0].id;
               if ($("#cstc").is(":visible")) {
@@ -222,89 +236,26 @@ loadedPages.checkout = {
                 obj["countryCode"] = $("#countries").select2("data")[0].id;
               }
 
-              if ($("#customerid").val() == -1) {
+              localStorage.customer = JSON.stringify(obj);
 
-                    api.call("insertCustomer", function(res) {
-                      try {
+                    api.call("insertWebCustomer", function(res) {
+
                           if (res.status == "ok") {
                             $("#customer_div").addClass("checked");
                             /*swal({
                               type: "success",
                               text: "Customer succesfully registered."
                             })*/
-                            $("#customerid").val(res.customerid);
-                            $("#2").hide();
-                            $("#3").show();
-                          } else {
-                            swal({
-                              type: "error",
-                              text: "Something went wrong"
-                            })
+                      //  $("#customerid").val(res.customerid);
+
+                        loadedPages.checkout.prepareOverview();
+                            $("#1").hide();
+                            $("#2").show();
                           }
-                        } catch(err) {
-
-                        }
-                    }, obj, {})
-
-              } else {
-                obj["customerid"] = $("#customerid").val();
-                api.call("updateCustomer", function(res) {
-
-                  if (res.status == "ok") {
-                    $("#2").hide();
-                    $("#3").show();
-
-                  } else {
-                    swal({
-                      type: "Error",
-                      text: "Something went wrong"
-                    })
-                  }
-                }, obj, {})
-              }
+                      }, obj, {},{})
           }
         });
-        $('#searchCustomer').typeahead({
-            autoSelect: true,
-            maxLength: 5,
-            afterSelect: function(obj) {
-              api.call("getCustomerByid", function(res) {
-                $("#customerid").val(obj.id);
-                var d = res[0];
-                for (var k in d) {
-                  $("#customerForm").find("[name='" + k + "']").val(d[k]);
-                }
-                $("#countries").val(d["countryCode"]).trigger('change');
 
-              }, {query: obj.id}, {}, {})
-            },
-            source: function (query, result) {
-                $.ajax({
-                    url: "http://85.214.165.56:81/api/index.php?request=searchCustomers",
-		               data: 'query=' + query,
-                    dataType: "json",
-                    type: "POST",
-                    success: function (data) {
-				                result($.map(data, function (item) {
-				                   return item;
-                        }));
-                    }
-                });
-            }
-        });
-      setTimeout(function() {
-        if (window.StatusBar){
-          try {
-              window.StatusBar.show();
-              setTimeout(function(){
-                  window.StatusBar.hide();
-              },5);
-            } catch(err) {
-
-            }
-        }
-      }, 1000);
-        loadedPages.checkout.setPayments();
   },
   setPayments: function() {
 
@@ -587,6 +538,8 @@ loadedPages.checkout = {
     loadedPages.checkout.calculatePayments();
   },
   prepareOverview: function() {
+    alert("lets overview");
+    return;
     var sp = $.parseJSON(localStorage.sp);
     $("#served").html("");
     $("<span>You have been served by <b>" + sp.Employee + "</b> in " + localStorage.showRoomName + "</span>").appendTo($("#served"));

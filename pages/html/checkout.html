@@ -2,7 +2,7 @@
     CHECKOUT
     <br /><span id="itemsinfo" style="font-size:14px;font-weight: normal;"></span>
 </div>
-<div id="1" parts>
+<div id="11" style="display:none;" parts>
     <div class="div-black" id="tours_div" step>1. Select a tour<span onclick="loadedPages.checkout.addTour();" style="position:absolute;right:10px;">Add tour`</span></div>
     <div style="max-width:100%;overflow-x:hidden;">
         <div style="margin:-1px auto;height:55px;background-color: white;position:relative;">
@@ -61,26 +61,19 @@
         </div>
     </form>
 </div>
-<div id="2" style="display:none;" parts>
-  <div class="div-black" style="margin-top:10px;" id="customer_div" step>2. Customer<span onclick="$('#2').hide();$('#1').show();" style="position:absolute;right:10px;">Back to tours</span></div>
+<div id="1"  parts>
+  <div class="div-black" style="margin-top:10px;" id="customer_div" step>1. Customer</div>
   <div style="max-width:100%;overflow-x:hidden;padding:10px;max-height:100%;overflow-y:auto;">
     <form id="customerForm" confirmed="no" style="font-weight:normal;font-size:12px;max-height:calc(100vh - 260px);">
         <input type="hidden" id="customerid" value="-1" />
         <input type="hidden" id="tourNo" name="tourNo" value="1" />
         <input type="hidden" id="cshowroom" value="1" />
         <input type="hidden" id="salesPerson" value="1" />
-        <div class="form-group">
-          <label>Type any part of customer data: name, email, address, country, telephone...in any order</label>
-            <input id="searchCustomer" type="text" placeholder="" class="form-control" />
-        </div>
+
         <div class="form-group">
             <input placeholder="Name" id="name" type="text" name="name" class="form-control" />
         </div>
 
-        <div class="form-group">
-
-            <input placeholder="Hotel" id="hotel" type="text" name="hotel" class="form-control" />
-        </div>
         <div class="form-group">
             <input placeholder="Email" id="email" type="text" name="email" class="form-control" />
         </div>
@@ -160,9 +153,9 @@
     </div>
 </div>
 
-<div id="4" style="display:none;" parts>
+<div id="2" style="display:none;" parts>
   <div class="div-black" style="margin-top:10px;padding-left:10px;" id="overview_div" step>
-    Overview<span onclick="$('#4').hide();$('#3').show();" style="position:absolute;right:10px;">Back to payments</span></div>
+    Overview<span onclick="$('#2').hide();$('#1').show();" style="position:absolute;right:10px;">Back to customer</span></div>
   <!--  <div style="padding:5px;width:100%;text-align:center;">
       <img onclick="loadedPages.checkout.shareOverview();" class='share' onclick="shareItem(this);" style='width:30px;margin-left:3px;margin-top:-3px;' src='http://85.214.165.56:81/coster/www/images/share.png' />
     </div>-->
@@ -213,9 +206,7 @@
 
 
     <div style="padding-left:20px;padding-right:20px;">
-        <button id='emailInvoice' onclick="loadedPages.checkout.signature(1);" style="margin-top:5px;float:right;" class="btn-green">EMAIL INVOICE</button>
-        <button id='printInvoice' onclick="loadedPages.checkout.signature(2);" style="margin-top:20px;float:right;" class="btn-black">PRINT INVOICE</button>
-        <button id='printEmailInvoice' onclick="loadedPages.checkout.signature(3);" style="margin-top:20px;float:right;" class="btn-green">PRINT & EMAIL INVOICE</button>
+        <button style="margin-top:20px;float:right;" class="btn-black">PAYMENT</button>
 
     </div>
   </div>

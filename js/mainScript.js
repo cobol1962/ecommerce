@@ -24,7 +24,7 @@ var optionsLoader = {
 function resetLocalStorage() {
 
   for (var  key in localStorage) {
-    if (key != "sp" && key != "tour" && key != "showRoom" && key != "showRoomName") {
+    if (key != "customer") {
 
       delete localStorage[key];
     }
@@ -203,7 +203,7 @@ $('#discountApproved').on('show.bs.modal', function () {
 
 })
   for (var  key in localStorage) {
-    if (key != "sp" && key != "tour" && key != "showRoom" && key != "showRoomName") {
+    if (key != "customer") {
       delete localStorage[key];
     }
   }
@@ -977,7 +977,7 @@ $( "#spf" ).validate({
         $("[login]").hide();
         $("#ename").html(res.sp.Employee);
         $("#ename1").html(res.sp.Employee);
-        $("[logout]").show();
+      //  $("[logout]").show();
       }
     }, obj, {}, {})
 

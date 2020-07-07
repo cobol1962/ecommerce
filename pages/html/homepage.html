@@ -1,7 +1,7 @@
 
 <div style="height:3000px;position:fixed;top:50px;max-height: calc(100vh - 50px); overflow-y: auto;">
 
-  <div navigation login style="backgroun: #f7f7f7;">
+  <div navigation login style="display:none !important;backgroun: #f7f7f7;">
       <a style="height:75px;background: white;font-size:15px;text-transform: capitalize;" href="#">
           <div style="width:100%;text-align:center;">
               <span onclick="$('#login').attr('nextpage','homepage');$('#login').modal('show');">Login with your Royal coster pin code</span>
@@ -10,12 +10,12 @@
           </div>
       </a>
   </div>
-  <div navigation logout style="font-size:17px;display:none;height: 50px;background-color: #f7f7f7;display:flex;align-items: center;justify-content: center;">
+  <div navigation logout style="display:none !important;font-size:17px;display:none;height: 50px;background-color: #f7f7f7;display:flex;align-items: center;justify-content: center;">
       <span style="color:black;">Welcome back,&nbsp;</span><span style="color:black;" id='ename1'></span>
   </div>
   <img onclick="loadPage('invoice');" style="width:100%;margin-bottom:5px;height:auto;" src="http://85.214.165.56:81/coster/www/images/home1.png" />
   <img onclick="loadPage('invoice');" style="width:100%;margin-bottom:5px;height:auto;" src="http://85.214.165.56:81/coster/www/images/home2.png" />
-  <img onclick="checkDiamonds();" style="width:100%;margin-bottom:5px;height:auto;" src="http://85.214.165.56:81/coster/www/images/home3.png" />
+  <img onclick="loadPage('diamonds');" style="width:100%;margin-bottom:5px;height:auto;" src="http://85.214.165.56:81/coster/www/images/home3.png" />
   <img onclick="loadPage('invoice');setTimeout(function() {setWatches();}, 1500);" style="width:100%;margin-bottom:5px;height:auto;" src="http://85.214.165.56:81/coster/www/images/home4.png" />
   <img id="last" onclick="window.open('https://api.whatsapp.com/send?phone=31644201409', '_system');" style="width:100%;margin-bottom:5px;height:auto;" src="http://85.214.165.56:81/coster/www/images/home5.png" />
 
@@ -51,13 +51,13 @@
       }
   }
   if (localStorage.sp === undefined) {
-    $("[logout]").hide();
-    $("[login]").show();
+//    $("[logout]").hide();
+//    $("[login]").show();
   } else {
     var sp = $.parseJSON(localStorage.sp);
-    $("#ename1").html(sp.Employee);
-    $("[logout]").show();
-    $("[login]").hide();
+  //  $("#ename1").html(sp.Employee);
+  //  $("[logout]").show();
+  //  $("[login]").hide();
   }
   setTimeout(function() {
     $(".app").hide(300);

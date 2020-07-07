@@ -96,8 +96,8 @@ function hideCatalog() {
                             <img onclick="loadPage('addproduct');" onclick="resetLocalStorage();loadPage('homepage')" src="http://85.214.165.56:81/costerdemo/coster/www/images/add-icon.png" style="width:28px;margin-top:12px;cursor:pointer;margin-left:5px;" alt="">
                         </td>
                         <td style="min-width:100%;width:100%;text-align:right;">
-                            <img onclick="$('#searchbackdrop').toggle();$('#search_div').toggle()" src="http://85.214.165.56:81/coster/www/images/search.png" style="position:absolute;top:10px;right:92px;float:right;cursor:pointer;margin-left:5px;" width="30" height="auto" alt="">
-                            <div id="search_div" style="width:100%;float:left;display:none;position:absolute;z-index:100001;top:50px;right:2px;">
+                            <img onclick="$('#searchbackdrop').toggle();$('#search_div').toggle()" src="http://85.214.165.56:81/coster/www/images/search.png" style="display:none;position:absolute;top:10px;right:92px;float:right;cursor:pointer;margin-left:5px;" width="30" height="auto" alt="">
+                            <div id="search_div" style="display:none;width:100%;float:left;display:none;position:absolute;z-index:100001;top:50px;right:2px;">
                               <table style="width:100%;background-color:white;"><tr><td><input placeholder="Type Item ID or Serial No." id="search"  class="form-control" type="text" /></td>
                               <td>&nbsp;&nbsp;<button onclick="doSearch();" style="padding:0;margin-top:-20px;float:right;height:35px;margin-left:5px;" class="btn-black" >Search</button></td>
                               <tr></table></div>
@@ -127,7 +127,7 @@ function hideCatalog() {
         <div onclick="$('#searchbackdrop').toggle();$('#search_div').toggle()" id="searchbackdrop">
         </div>
         <ul onclick="$('#navbackdrop').toggle();$('#tt').toggle()" id="tt">
-            <li navigation login>
+        <!--    <li navigation login>
                 <a style="height:75px;background: white;font-size:15px;text-transform: capitalize;" href="#">
                     <div style="width:100%;text-align:center;">
                         <span onclick="$('#login').modal('show');">Login with your Royal coster pin code</span>
@@ -138,7 +138,7 @@ function hideCatalog() {
             </li>
             <li navigation logout><a style="color:red;" href="javascript: writeLogout();ws.close();$('#spf')[0].reset();delete localStorage.sp;checkLogin();$([login]).show();$([logout]).hide()">
               <span style="color:black;text-transform: capitalize;">Welcome, </span><span style="text-transform: capitalize;color:black;" id='ename'></span>
-              <br />Logout</a></li>
+              <br />Logout</a></li>-->
             <li navigation currency_select>
                 <a style="background-image:unset;" href="#">
                     <span>Switch currency</span>
@@ -152,9 +152,9 @@ function hideCatalog() {
             <li navigation><a href="javascript:loadPage('invoice');">Browse catalog</a></li>
             <li navigation><a href="javascript: $('#mainNavbar').removeClass('in');if (currentPage != 'invoice') {loadPage('invoice')};setTimeout(function() { setWatches();}, 2000);">Browse Coster watches</a></li>
             <li navigation><a href="javascript:loadPage('diamonds');">Browse diamondlist</a></li>
-            <li navigation><a href="javascript:loadPage('tours');">Browse tours</a></li>
+          <!--  <li navigation><a href="javascript:loadPage('tours');">Browse tours</a></li>
             <li navigation salespersons><a href="javascript:checkIsLogged('customers');">Browse My Customer</a></li>
-            <li navigation salespersons><a href="javascript:checkIsLogged('invoices');">Browse My Invoices</a></li>
+            <li navigation salespersons><a href="javascript:checkIsLogged('invoices');">Browse My Invoices</a></li>-->
             <li navigation salespersons><a href="#">Help</a></li>
         </ul>
         <div id="blue" style="display:none !important;background-color:#0174be;width:100%;min-width:100%;display:none;padding:5px;">
