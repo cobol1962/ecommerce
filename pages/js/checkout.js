@@ -7,6 +7,9 @@ loadedPages.checkout = {
   invoiceID: "",
   documentName: "",
   currentInvoice: "",
+  ttl: 0,
+  t1: 0,
+  stripeResponse: {},
   initialize: function() {
 
 
@@ -22,9 +25,6 @@ loadedPages.checkout = {
     maxHeight: window.innerHeight - 100
   })
 
-    var ii = "";
-    ii = ((Object.keys(shoppingCartContent).length > 1) ? " items " : " item ");
-    $("#itemsinfo").html(Object.keys(shoppingCartContent).length + ii + parseFloat(localStorage.payNoRefund).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }))
 
   if (localStorage.customerCountry === undefined) {
     api.call("getCountries", function(res) {
@@ -538,32 +538,6 @@ loadedPages.checkout = {
     loadedPages.checkout.calculatePayments();
   },
   prepareOverview: function() {
-    alert("lets overview");
-    return;
-    var sp = $.parseJSON(localStorage.sp);
-    $("#served").html("");
-    $("<span>You have been served by <b>" + sp.Employee + "</b> in " + localStorage.showRoomName + "</span>").appendTo($("#served"));
-    $("#consultant").html(sp.Employee.replace(/\s/g, "").trim() + "@costerdiamonds.com");
-    var tour = $.parseJSON(localStorage.tour);
-    try {
-        var sc = $.parseJSON(localStorage.customerCountry);
-        if (sc.eu == "0") {
-
-          if (localStorage.directRefund) {
-            $("<span>We haven processed a Fast Refund.</span>").appendTo($("#notice"));
-          } else {
-            $("<span>We have given you a VAT form for refund purposes.</span>").appendTo($("#notice"));
-          }
-        }
-    } catch(err) {
-
-    }
-
-    if (loadedPages.checkout.cache > 1000) {
-      $("<span>Due to company regulations we require a copy of the customer's identitification details.</span>").appendTo($("#cache"));
-    }
-    $("<span>Tour no. " +  tour.ProjId, + ", " + moment(new Date(tour.AVisitDateTime)).format("DD.MM.YYYY HH:mm") + "</span>").appendTo($("#tour"));
-
     if ($("#name").val() != "") {
       $("[firstname]").html($("#name").val());
       $("[firstname]").parent().show();
@@ -625,106 +599,34 @@ loadedPages.checkout = {
     }
     $("#items").html("");
     $("#total_div").html("");
+    var ii = 0;
+    var total = 0;
     for (var key in shoppingCartContent) {
        var obj = shoppingCartContent[key];
     //   alert(obj.Discount)
+    console.log(obj)
        obj.Discount = ((obj.Discount == "0%") ? "" : (obj.Discount));
        obj.imageURL = obj.imageURL.replace("50px", "100px");
+       ii += parseInt(obj.quantity);
+       total += parseInt(obj.toPay);
        var html = "<div root style='font-size:14px;'><div serial='" + obj.SerialNo + "' style='border-top:1px solid #e2e2e2;min-height:115px;border-bottom:1px solid #e2e2e2;padding:10px;padding-bottom:20px;width:100%;position:relative;'>";
        html += "<div>" + ((obj.imageURL != "") ? obj.imageURL : "<img style='width:100px;' src='http://85.214.165.56:81/coster/www/images/crown.png' />");
        html += "<div style='position:absolute;top:10px;left:120px;color:#ADADAD;'>" + obj.SerialNo + "<br />"
        html += "<span productname style='color:black;max-width:300px;font-size:11px;'>" + obj.productName.replace("undefined","") + "</span></div>";
 
         html += "<div style='position:absolute;top:10px;right:0px;color:black;font-size:13px;'>";
-        if (obj.Discount != "") {
-          if (obj.additionalDiscount == "") {
-                html += "<div style='float:left;'>"
-                html += "<span style='color:red;'>";
-                html += "<b><span style='min-width:100px;text-align:right;width:100;'>" + obj.Discount + "</span></b>&nbsp;</span><span style='text-decoration:line-through;'>" + (parseFloat(obj.SalesPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-                html += "<input spdiscount onchange='loadedPages.shoppingCart.discounts(this);' value='" + obj.Discount + "' type='text' class='form-control' style='display:none;text-align:right;float:right;width:85px;clear:both;' placeholder='Discount' /><br />";
-          } else {
+        html += "<div style='float:right;'>" + "<span>" + obj.quantity + "X&nbsp;</span>" + "<span realvalue='" + parseFloat(obj.realPrice) + "'>" + (parseFloat(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
+        html += "<br /><span style='float:right;font-weight:bold;'>" + (parseFloat(obj.toPay) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
 
-            html += "<div style='float:left;'>"
-            html += "<span style='color:red;'>";
-            html += "<b><span style='min-width:100px;text-align:right;width:100px;'>" + obj.Discount + "</span></b>&nbsp;</span><span style='text-decoration:line-through;float:right;'>" + (parseFloat(obj.SalesPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-            html += "<input spdiscount onchange='loadedPages.shoppingCart.discounts(this);' value='" + obj.Discount + "' type='text' class='form-control' style='display:none;text-align:right;float:right;width:85px;clear:both;' placeholder='Discount' /><br />";
-
-            html += "<span style='color:red;'>";
-            html += "<b><span style='min-width:100px;text-align:right;width:100px;'>" + obj.additionalDiscount + "</span></b>&nbsp;</span><span style='text-decoration:line-through;float:right;'>" + (parseFloat(obj.startRealPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span>";
-            html += "<br /><span style='float:right;'>" + (parseFloat(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-
-            html += "<input spdiscount onchange='loadedPages.shoppingCart.discounts(this);' value='" + obj.additionalDiscount + "' type='text' class='form-control' style='display:none;text-align:right;float:right;width:85px;clear:both;' placeholder='Discount' /><br />";
-
-          }
-        }
-        if (obj.Discount != "") {
-          var sm = parseFloat(obj.SalesPrice);
-          if (obj.Discount.indexOf("%") > -1) {
-            var prc = parseFloat(obj.Discount.replace("%", ""));
-            obj.realPrice = sm - ((sm / 100) * prc);
-          } else {
-            var prc = parseFloat(obj.Discount);
-            obj.realPrice = sm - prc;
-          }
-        } else {
-          obj.realPrice = obj.SalesPrice;
-        }
-
-        if ((parseFloat(obj.realPrice) - parseInt(obj.realPrice)) > 0) {
-          obj.realPrice = parseInt(obj.realPrice) + 1;
-        }
-        if (obj.Discount == "" && obj.additionalDiscount == "") {
-          html += "<div style='float:right;'><span realvalue='" + parseFloat(obj.realPrice) + "'>" + (parseFloat(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-          html += "<input spdiscount onchange='loadedPages.shoppingCart.discounts(this);' value='" + obj.Discount + "' type='text' class='form-control' style='clear:both;text-align:right;float:right;width:85px;display:none;' placeholder='Discount' /><br />";
-        } else {
-          if (!obj.discountLocked) {
-            html += "<div style='float:right;'><span realvalue='" + parseFloat(obj.realPrice) + "'>" + (parseFloat(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-          }
-          if (obj.discountLocked && obj.additionalDiscount == "") {
-            html += "<div style='float:right;'><span realvalue='" + parseFloat(obj.realPrice) + "'>" + (parseFloat(obj.realPrice) * 1).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }) + "</span></div>";
-          }
-        }
+        html += "<input spdiscount onchange='loadedPages.shoppingCart.discounts(this);' value='" + obj.Discount + "' type='text' class='form-control' style='clear:both;text-align:right;float:right;width:85px;display:none;' placeholder='Discount' /><br />";
         html += "</div></div></div>";
         $(html).appendTo($("#items"));
 
      }
-     var dv = $(localStorage.total_div);
-     var tb = dv.find("table");
-     var sgn = (tb.find(".discounttype").hasClass("euro")) ? "€" : "%";
-     if (sgn == "€") {
-       tb.parent().html(sgn + " " + parseFloat(localStorage.invoiceDiscount).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-     } else {
-       tb.parent().html(localStorage.invoiceDiscount);
-     }
-     dv.appendTo($("#total_div"));
-     if (localStorage.invoiceDiscount == "") {
-       $("#total_div").find("#total").hide();
-     }
-     $("<tr><td style='text-align:left;'><b>To be paid</b></td><td style='padding-left:5px;'><b>" + localStorage.toBePaid + "</b></td></tr>").appendTo($("#total_div").find("table").find("tbody"));
-     $.each($("#total_div").find("input"), function() {
-       $(this).val(localStorage.invoiceDiscount);
-       $(this).prop("disabled", true);
-       if ($(this).val() == "") {
-         $(this).closest("tr").remove();
-       }
-     })
-     $("#pt").find("tr").remove();
-     $.each($("#paymentsTable").find("tr"), function(ind) {
-       if (ind > 0) {
-          if ($(this).find("select").eq(0).val() != "7") {
-            $("<tr><td style='text-align:left;'>" + $(this).find("select").eq(0).find("option:selected").text() + "</td><td style='padding-left:5px;'>" + $(this).find("input").val() + "</td></tr>").appendTo($("#pt"));
-          } else {
-            var thenum = $(this).find("input").val().replace( /^\D+/g, '');
-            var n = thenum.replace(/\./g, "");
-            var n = n.replace(/\,/g, ".");
-            if (Math.abs(n) > (parseFloat(localStorage.toBePaid) / 100)) {
-              $("<tr><td style='text-align:left;'>Change</td><td style='padding-left:5px;'>" + $(this).find("input").val() + "</td></tr>").appendTo($("#pt"));
-            }
-          }
-        }
-     })
-     $("#3").hide();
-     $("#4").show();
+     iii = (ii > 1) ? " items " : " item ";
+     $("#itemsinfo").html(ii + " " + iii + parseFloat(total).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" }))
+     loadedPages.checkout.ttl = parseFloat(total).toLocaleString("nl-NL",{ style: 'currency', currency: "EUR" });
+     loadedPages.checkout.t1 = parseFloat(total);
   },
   shareOverview: function() {
 
@@ -779,6 +681,8 @@ loadedPages.checkout = {
 
   },
   generateInvoice: function() {
+    alert("recipt now!!!!!!!!!!!!!");
+    $("body").LoadingOverlay("hide");
     var mode = $("#sign").attr("mode");
     $("#sign").modal("hide");
     $("[parts]").hide();
@@ -1297,5 +1201,50 @@ console.log(res)
          keyboard: false
        })
        $('#sign').modal("show");
+     },
+     doStripe: function() {
+       loadedPages.checkout.stripeResponse;
+       showModal({
+         title: "Confirm payment of " + loadedPages.checkout.ttl,
+         confirmButtonText: "CONFIRM",
+         confirmCallback: function() {
+           $("#frmStripePayment").find("#amount").val(loadedPages.checkout.t1);
+           $.ajax({
+              url:"stripe.php",
+              method:"POST",
+              data:$('#frmStripePayment').serialize(),
+              dataType: "JSON",
+              success:function(res){
+                if (res.status = "succeeded") {
+                  loadedPages.checkout.stripeResponse = res;
+                  loadedPages.checkout.thankyou();
+                  $("#3").hide();
+                  $("#4").show();
+                } else {
+                  showModal({
+                    type: "error",
+                    title: "Something went wrong. Check your card details",
+                    showCancelButton:false
+                  });
+                }
+
+              }
+         });
+         }
+       })
+     },
+     thankyou: function() {
+       $("#sname").val($("#customerForm").find("#name").val());
+       $("#saddress1").val($("#customerForm").find("#address1").val());
+       $("#saddress2").val($("#customerForm").find("#address2").val());
+       $("#stelephone").val($("#customerForm").find("#telephone").val());
+       $("#szip").val($("#customerForm").find("#zip").val());
+       $("#scity").val($("#customerForm").find("#city").val());
+
+       html = "<b>" + $("#customerForm").find("#name").val() + " Thank you for your order." + "</b><br/>";
+       html += "Your payment has been succesfully proccessed. Payment reference is Stripe " +  loadedPages.checkout.stripeResponse.id + "<br /><br />";
+       html += "<h4>Please confirm shipping details:</h4>";
+       $("#thanks").html(html);
      }
+
 }

@@ -118,44 +118,80 @@
   </div>
 </div>
 <div id="3" style="display:none;" parts>
-  <div class="div-black" style="margin-top:10px;" id="payment_div" step>3. Payment details<span onclick="$('#3').hide();$('#2').show();" style="position:absolute;right:10px;">Back to customer</span></div>
-  <div style="max-width:100%;overflow-x:hidden;padding:10px;">
-    <table id="paymentsTable" class="table-striped table-bordered" style="width:100%;font-size:10px;">
+  <div id="error-message"></div>
 
-        <tbody>
-            <tr>
-                <td colspan="4" style="text-align:center">
-                    <button id="addpayment" class="btn-black" onclick="loadedPages.checkout.addPayment();">Add payment</button>
-                </td>
-            </tr>
-            <tr>
-                <td style="text-align: right;">
-                    <select class="form-control" style="font-size:10px;" currency>
+  <form id="frmStripePayment" action="stripe.php" method="post">
+      <div class="field-row">
+          <label>Card Holder Name</label> <span id="card-holder-name-info"
+              class="info"></span><br> <input type="text" disabled id="name"
+              name="name" class="demoInputBox">
+      </div>
+      <div class="field-row">
+          <label>Email</label> <span id="email-info" class="info"></span><br>
+          <input type="text" id="email" disabled name="email" class="demoInputBox">
+      </div>
+      <div class="field-row">
+          <label>Card Number</label> <span id="card-number-info"
+              class="info"></span><br> <input type="text" id="card-number" value="4242424242424242"
+              name="card-number" class="demoInputBox">
+      </div>
+      <div class="field-row">
+          <div class="contact-row column-right">
+              <label>Expiry Month / Year</label> <span id="userEmail-info"
+                  class="info"></span><br> <select name="month" id="month" value="12"
+                  class="demoSelectBox" style="padding:2px;">
+                  <option value="01">01</option>
+                  <option value="02">02/option>
+                  <option value="03">03</option>
+                  <option value="04">04</option>
+                  <option value="05">05</option>
+                  <option value="06">06</option>
+                  <option value="07">07</option>
+                  <option value="08">08</option>
+                  <option value="03">09</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+              </select> <select style="padding:2px;" name="year" id="year"
+                  class="demoSelectBox">
+                  <option value="20">2020</option>
+                  <option value="21">2021</option>
+                  <option value="22">2022</option>
+                  <option value="23">2023</option>
+                  <option value="24">2024</option>
+                  <option value="25">2025</option>
+                  <option value="26">2026</option>
+                  <option value="27">2027</option>
+                  <option value="28">2028</option>
+                  <option value="29">2029</option>
+                  <option value="30">2030</option>
+              </select>
+          </div>
+          <div class="contact-row cvv-box">
+              <label>CVC</label> <span id="cvv-info" class="info"></span><br>
+              <input type="text" name="cvc" id="cvc"
+                  class="demoInputBox cvv-input">
+          </div>
+      </div>
+      <div>
+          <input type="submit" name="pay_now" value="Submit"
+              id="submit-btn" class="btnAction"
+              onClick="stripePay(event);">
 
-                    </select>
-                </td>
-                <td style="text-align: right;">
-                    <select class="form-control" style="display:none;" currency>
-                        <option>€</option>
-
-                    </select>
-                </td>
-                <td style="text-align: right;width:100px;">
-                    <input type="text" class="form-control" />
-                </td>
-                <td onclick='loadedPages.checkout.deletePayment(this);return false;'><i class='fa fa-trash fa-2x m-r-5'></i></td>
-                <tr>
-        </tbody>
-    </table>
-    </div>
-    <div style="padding-left:20px;padding-right:20px;">
-        <button id='confirmPayments' onclick="loadedPages.checkout.prepareOverview();$('#payment_div').addClass('checked');" style="margin-top:5px;float:right;" class="btn-green">Confirm & continue</button>
-    </div>
+          <div id="loader">
+              <img alt="loader" src="LoaderIcon.gif">
+          </div>
+      </div>
+      <input type='hidden' name='amount' id="amount" value='0.5'>
+      <input type='hidden'  name='currency_code' value='EUR'>
+       <input type='hidden'  name='item_name' value='Web order'>
+       <input type='hidden'  name='item_number' value='Items from web shop'>
+  </form>
 </div>
 
 <div id="2" style="display:none;" parts>
   <div class="div-black" style="margin-top:10px;padding-left:10px;" id="overview_div" step>
-    Overview<span onclick="$('#2').hide();$('#1').show();" style="position:absolute;right:10px;">Back to customer</span></div>
+    Overview<span onclick="$('#3').hide();$('#2').show();" style="position:absolute;right:10px;">Back to overview</span></div>
   <!--  <div style="padding:5px;width:100%;text-align:center;">
       <img onclick="loadedPages.checkout.shareOverview();" class='share' onclick="shareItem(this);" style='width:30px;margin-left:3px;margin-top:-3px;' src='http://85.214.165.56:81/coster/www/images/share.png' />
     </div>-->
@@ -197,7 +233,7 @@
   </div>
   <div id="items"></div>
   <div id="total_div" style="border-bottom:1px solid #e2e2e2;width:100px;min-width:100%;float:right;text-align:right;background:white;padding:10px;font-size:15px;"></div>
-  <div id="payments_div" style="width:100px;min-width:100%;float:right;text-align:right;background:white;padding:10px;font-size:15px;">
+  <div id="payments_div" style="display:none !important;;width:100px;min-width:100%;float:right;text-align:right;background:white;padding:10px;font-size:15px;">
     <table id="pt" style="table-layout:auto;width:200px;float:right;"></table>
   </div>
   <div style="text-align:center;display:none;" id="notice"></div>
@@ -206,7 +242,7 @@
 
 
     <div style="padding-left:20px;padding-right:20px;">
-        <button style="margin-top:20px;float:right;" class="btn-black">PAYMENT</button>
+        <button style="margin-top:20px;float:right;" onclick="$('#frmStripePayment').find('#email').val($('#customerForm').find('#email').val());$('#frmStripePayment').find('#name').val($('#customerForm').find('#name').val());$('#2').hide();$('#3').show();" class="btn-black">PAYMENT</button>
 
     </div>
   </div>
@@ -228,7 +264,40 @@
           <td onclick='loadedPages.checkout.deletePayment(this);'><i class='fa fa-trash fa-2x m-r-5'></i></td>
           <tr>
   </table>
+<div id="4" style="display:none;" parts>
+  <div id="thanks" style="width:100%;text-align:center;"></div>
+  <form id="shippingForm" confirmed="no" style="font-weight:normal;font-size:12px;max-height:calc(100vh - 260px);">
 
+      <div class="form-group">
+          <input placeholder="Name" id="sname" type="text" name="sname" class="form-control" />
+      </div>
+        <div class="form-group">
+          <input placeholder="Address line 1" id="saddress1" type="text" name="saddress1" class="form-control" />
+      </div>
+      <div class="form-group">
+          <input id="saddress2" placeholder="Address line 2" type="text" name="saddress2" class="form-control" />
+      </div>
+      <div class="form-group">
+          <input placeholder="Telephone" id="stelephone" type="text" name="stelephone" class="form-control" />
+      </div>
+      <div class="row">
+          <div class="col-xs-3 col-lg-3">
+              <div class="form-group">
+                  <input placeholder="Zip/Post code" id="szip" type="text" name="szip" class="form-control" />
+              </div>
+          </div>
+          <div class="col-xs-6 col-lg-6">
+              <div class="form-group">
+                  <input placeholder="City" id="scity" type="text" name="scity" class="form-control" />
+              </div>
+          </div>
+
+
+      </div>
+
+  </form>
+  <button class="btn-black" onclick="$('body').LoadingOverlay('show', optionsLoader);$('#toggleShoppigCart').addClass('empty');shoppingCartContent=[];$('#4').hide();loadedPages.checkout.generateInvoice();">CONFIRM</button>
+</div>
 <div id="invoice" style="font-family:'Calibri Light';background-color: white;border:none;height:561px;width:400px;padding-bottom:20px;">
   <style>
   #footerdata td {
@@ -237,6 +306,7 @@
       font-size:6pt;
   }
   #master td select {
+
     font-size: 10px;
   }
   #master td input {
@@ -474,4 +544,158 @@
       background-color: #F2F2F2;
     }
 
+</style>
+<script>
+function cardValidation () {
+    var valid = true;
+    var name = $('#name').val();
+    var email = $('#email').val();
+    var cardNumber = $('#card-number').val();
+    var month = $('#month').val();
+    var year = $('#year').val();
+    var cvc = $('#cvc').val();
+
+    $("#error-message").html("").hide();
+
+    if (name.trim() == "") {
+        valid = false;
+    }
+    if (email.trim() == "") {
+    	   valid = false;
+    }
+    if (cardNumber.trim() == "") {
+    	   valid = false;
+    }
+
+    if (month.trim() == "") {
+    	    valid = false;
+    }
+    if (year.trim() == "") {
+        valid = false;
+    }
+    if (cvc.trim() == "") {
+        valid = false;
+    }
+
+    if(valid == false) {
+      showModal({
+        type: "error",
+        confirmButtonText: "CONTINUE",
+        showCancelButton: false,
+        title: "All fields required"
+      })
+    }
+
+    return valid;
+}
+//set your publishable key
+Stripe.setPublishableKey("pk_test_B7LzF5ZOBMVVM9YuTw5AIqcQ");
+
+//callback to handle the response from stripe
+function stripeResponseHandler(status, response) {
+  $("#loader").hide();
+    if (response.error) {
+        //enable the submit button
+        showModal({
+          type: "error",
+          showCancelButton: false,
+          confirmButtonText: "CONTINUE",
+          title: response.error.message
+        })
+        $("#submit-btn").show();
+        $( "#loader" ).css("display", "none");
+        //display the errors on the form
+
+    } else {
+        //get token id
+        var token = response['id'];
+        //insert the token into the form
+        $("#frmStripePayment").append("<input type='hidden' name='token' value='" + token + "' />");
+        //submit form to the server
+          $("#submit-btn").show();
+        loadedPages.checkout.doStripe();
+    }
+}
+function stripePay(e) {
+    e.preventDefault();
+    var valid = cardValidation();
+
+    if(valid == true) {
+        $("#submit-btn").hide();
+        $( "#loader" ).css("display", "inline-block");
+        Stripe.createToken({
+            number: $('#card-number').val(),
+            cvc: $('#cvc').val(),
+            exp_month: $('#month').val(),
+            exp_year: $('#year').val()
+        }, stripeResponseHandler);
+
+        //submit from callback
+        return false;
+    }
+}
+</script>
+<style>
+
+  #error-message {
+      margin: 0px 0px 10px 0px;
+      padding: 5px 25px;
+      border-radius: 4px;
+      line-height: 25px;
+      font-size: 0.9em;
+      color: #ca3e3e;
+      border: #ca3e3e 1px solid;
+      display: none;
+      width: 300px;
+  }
+
+  #success-message {
+      margin: 0px 0px 10px 0px;
+      padding: 5px 25px;
+      border-radius: 4px;
+      line-height: 25px;
+      font-size: 0.9em;
+      color: #3da55d;
+      border: #43b567 1px solid;
+      width: 300px;
+  }
+
+  .display-none {
+      display:none;
+  }
+
+  #response-container {
+      padding: 40px 20px;
+      width: 270px;
+      text-align:center;
+  }
+
+
+  .ack-message {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+  }
+
+  #response-container.success {
+      border-top: #b0dad3 2px solid;
+      background: #e9fdfa;
+  }
+
+  #response-container.error {
+      border-top: #c3b4b4 2px solid;
+      background: #f5e3e3;
+  }
+
+  .img-response {
+      margin-bottom: 30px;
+  }
+
+  #loader {
+      display: none;
+  }
+
+  #loader img {
+      width: 45px;
+      vertical-align: middle;
+  }
 </style>

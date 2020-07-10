@@ -75,6 +75,7 @@ function resizeCanvas() {
 
 
 $(document).ready(function() {
+
   window.addEventListener('beforeunload', function(event) {
     userData.activity = "Close application";
 /*    api.call("createlog", function() {
@@ -380,7 +381,8 @@ var pageUrls = {
   customers: "customers",
   addproduct: "addproduct",
   search: "search",
-  details: "details"
+  details: "details",
+  thankyou: "thankyou"
 }
 function locationHashChanged() {
   $(".modal").modal("hide");
