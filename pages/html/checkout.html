@@ -296,7 +296,12 @@
       </div>
 
   </form>
-  <button class="btn-black" onclick="$('body').LoadingOverlay('show', optionsLoader);$('#toggleShoppigCart').addClass('empty');$('#4').hide();loadedPages.checkout.generateInvoice();">CONFIRM</button>
+<!--  <button class="btn-black" onclick="$('body').LoadingOverlay('show', optionsLoader);$('#toggleShoppigCart').addClass('empty');$('#4').hide();loadedPages.checkout.generateInvoice();">CONFIRM</button> -->
+
+  <button class="btn-black" onclick="$('#shippingForm').submit();">CONFIRM</button>
+
+
+
 </div>
 <div id="invoice" style="font-family:'Calibri Light';background-color: white;border:none;height:561px;width:400px;padding-bottom:20px;">
   <style>

@@ -256,6 +256,44 @@ loadedPages.checkout = {
                       }, obj, {},{})
           }
         });
+        $( "#shippingForm" ).validate({
+            rules: {
+              sname: {
+                required: true
+              },
+              saddress1: {
+                required: true
+              },
+              stelephone: {
+                required: true
+              },
+              szip: {
+                required: true
+              },
+              scity: {
+                required: true
+              }
+            },
+            submitHandler: function(form) {
+                var obj = {};
+                $.each($("#shippingForm").find("[name]"), function() {
+                  obj[$(this).attr("name").substring(1)] = $(this).val();
+                })
+
+                obj["country"] = $("#countries").select2("data")[0].text;
+                obj["countryCode"] = $("#countries").select2("data")[0].id;
+                obj["invoiceid"] = loadedPages.checkout.invoiceID;
+                  api.call("insertWebShipping", function(res) {
+alert(JSON.stringify(res));
+                        if (res.status == "ok") {
+                            $('body').LoadingOverlay('show', optionsLoader);
+                            $('#toggleShoppigCart').addClass('empty');
+                            $('#4').hide();
+                            loadedPages.checkout.generateInvoice();
+                        }
+                    }, obj, {},{})
+            }
+          });
 
   },
   setPayments: function() {
@@ -681,7 +719,6 @@ loadedPages.checkout = {
 
   },
   generateInvoice: function() {
-    alert("?????")
     var t = parseFloat(loadedPages.checkout.t1);
     var obj = {
        customerid: localStorage.customerid,
@@ -714,7 +751,6 @@ loadedPages.checkout = {
               obj["imageURL"] = "";
               obj["invoiceid"] = res.invoiceid;
               obj["total"] = parseInt(obj.quantity) * parseFloat(obj.realPrice);
-              alert(obj["total"]);
               api.call("insertWebInvoiceBody", function(r) {
                 console.log(r);
               }, obj, {}, {});
@@ -814,6 +850,15 @@ loadedPages.checkout = {
     h += "<td style='width:100px;text-align:right;font-size: 5pt;'>€&nbsp;" + parseFloat(loadedPages.checkout.t1).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
     h += "</tr>";
     h += "<tr><td colspan='4' style='white-space:normal;text-align:center;padding-top:15px;'>In case of any problem please contact support@costerdiamonds.com. Reffer to your invoice number and your payment id <b>Stripe " + loadedPages.checkout.stripeResponse.id + "</b>.</td>"
+   var sadr = "";
+   sadr = "<b>Shipping details:</b><br />";
+   sadr += $("#sname").val() + "<br />";
+   sadr += $("#saddress1").val() + "<br />";
+  sadr += ($("#saddress2").val() != "") ? ($("#saddress2").val() + "<br />") : "";
+   sadr += $("#szip").val() + "&nbsp;" + $("#scity").val() + "<br />";
+   sadr += $("#stelephone").val() + "<br />";
+   sadr += $("#countries").val();
+    h += "<tr><td colspan='4' style='white-space:normal;text-align:left;padding-top:15px;'>" + sadr + "</td>"
 
 
 
