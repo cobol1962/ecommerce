@@ -241,6 +241,7 @@ loadedPages.checkout = {
                     api.call("insertWebCustomer", function(res) {
 
                           if (res.status == "ok") {
+                            localStorage.customerid = res.customerid;
                             $("#customer_div").addClass("checked");
                             /*swal({
                               type: "success",
@@ -498,7 +499,6 @@ loadedPages.checkout = {
 
   },
   newInvoice: function() {
-    shoppingCartContent = {};
 
     if (Object.keys(shoppingCartContent).length == 0) {
       $("#toggleShoppigCart").addClass("empty");
@@ -604,7 +604,7 @@ loadedPages.checkout = {
     for (var key in shoppingCartContent) {
        var obj = shoppingCartContent[key];
     //   alert(obj.Discount)
-    console.log(obj)
+
        obj.Discount = ((obj.Discount == "0%") ? "" : (obj.Discount));
        obj.imageURL = obj.imageURL.replace("50px", "100px");
        ii += parseInt(obj.quantity);
@@ -681,60 +681,96 @@ loadedPages.checkout = {
 
   },
   generateInvoice: function() {
-    alert("recipt now!!!!!!!!!!!!!");
+    alert("?????")
+    var t = parseFloat(loadedPages.checkout.t1);
+    var obj = {
+       customerid: localStorage.customerid,
+       total: loadedPages.checkout.t1,
+       date: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+       pdf: "",
+       vatExcluded: (t / 1.21).toFixed(2),
+       vat: t - ((t / 1.21).toFixed(2)),
+       stripe_id: loadedPages.checkout.stripeResponse.id
+    }
+    api.call("insertWebInvoice", function(res) {
+      if (res.status == "ok") {
+        var nm = "WebInvoice_" + moment(new Date()).format("YYYYMMDD") + "_" + "8" + res.invoiceid.toString().padStart(5, "0") + ".pdf";
+        var obj = {
+          invoiceid: res.invoiceid,
+          pdf: nm
+        }
+        api.call("updateWebInvoice", function(r) {
+          if (res.status == "ok") {
+            for (var key in shoppingCartContent) {
+              var data = shoppingCartContent[key];
+              var obj = {};
+              var img = $(data["imageUrl"]);
+              console.log(data)
+              for (var k in data) {
+                obj[k] = data[k];
+              }
+              var dd = $(obj["CompName"]);
+              obj["name"] = (obj["productName"] != "") ? obj["productName"] : obj["CompName"].replace(/<\/?[^>]+(>|$)/g, "");
+              obj["imageURL"] = "";
+              obj["invoiceid"] = res.invoiceid;
+              obj["total"] = parseInt(obj.quantity) * parseFloat(obj.realPrice);
+              alert(obj["total"]);
+              api.call("insertWebInvoiceBody", function(r) {
+                console.log(r);
+              }, obj, {}, {});
+            }
+            loadedPages.checkout.generateInvoice1("8" + res.invoiceid.toString().padStart(5, "0"), nm, res.invoiceid);
+          }
+        }, obj, {}, {});
+      } else {
+        showModal({
+           title: "Something went wrong",
+           showCancelButton: false
+        })
+      }
+    }, obj, {}, {})
+  },
+  generateInvoice1: function(iid, pdf, invoiceID) {
+
     $("body").LoadingOverlay("hide");
     var mode = $("#sign").attr("mode");
     $("#sign").modal("hide");
     $("[parts]").hide();
     $("#invoice").show();
-    var tour = $.parseJSON(localStorage.tour);
     $("#cinf").html("");
     $("#customerInfo").clone().appendTo($("#cinf"));
-    $("#tnmbr").html(tour.ProjId);
-    var sp = $.parseJSON(localStorage.sp);
-   var bc = textToBase64Barcode(15);
-   $("#bar_image").attr("src", bc);
    $("#mTableBody").html("");
    $("#pTable").html("");
    $("#summary").html("");
-    $("#servedby").html("You have been served by <b>" + sp.Employee + "</b> in " + localStorage.showRoomName);
+   var bc = textToBase64Barcode(iid);
+     // $.LoadingOverlay("hide");
+     $("#bar_image").attr("src", bc);
     $("#invoiceDate").html(moment(new Date()).format("DD-MM-YYYY HH:mm"));
 //  $("#invoiceDate").html("18-06-2020 16:33");
     var h = "";
     var rclass = "even";
+    console.log(shoppingCartContent)
     for (var key in shoppingCartContent) {
-        var obj = shoppingCartContent[key];
-      if (obj.additionalDiscount != "" && obj.discountLocked) {
-        if (obj.additionalDiscount != "") {
-
-            var sm = parseFloat(obj.realPrice);
-            if (obj.additionalDiscount.indexOf("%") > -1) {
-              var prc = parseFloat(obj.additionalDiscount.replace("%", ""));
-              obj.realPrice = sm - ((sm / 100) * prc);
-            } else {
-              var prc = parseFloat(obj.additionalDiscount);
-              obj.realPrice = sm - prc;
-            }
-
-          } else {
-
-            obj.realPrice = obj.startRealPrice;
-          }
-
-      }
+      var obj = shoppingCartContent[key];
       rclass = (rclass == "even") ? "" : "even";
       h += "<tr class='" + rclass + "'>";
-      h += "<td style=''>" + obj.SerialNo + "</td>";
-      h += "<td style='width:50%;max-width:50%;min-width:50%;'>" + obj.productName.replace("undefined", "") + "</td>";
-      h += "<td style='padding-left:3px;text-align:right;'>€&nbsp;</td>";
-      h += "<td style='text-align:right;'>" + parseFloat(obj.SalesPrice).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
+      h += "<td style=''>" + obj.ItemID + "</td>";
+      h += "<td style='max-width:50%;width:50%;min-width:50%;text-align:left;word-break:break-word;white-space:normal;'>" + obj.CompName.replace("undefined", "") + "</td>";
+      h += "<td style='padding-left:10px;'>" + obj.quantity + "&nbsp;X&nbsp;";
+      var tt = parseInt(parseFloat(obj.total) / parseInt(obj.quantity));
+      h += "€&nbsp;" + parseFloat(tt).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 });
       var dd = "";
       if (obj.Discount != "") {
+        h += "<br />";
         if (obj.Discount.indexOf("%") > -1) {
-          dd += "&nbsp;" + obj.Discount;
+          dd += "<span style='color:red;'>&nbsp;-" + obj.Discount;
         } else {
           dd += "€&nbsp;" + parseFloat(obj.Discount).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
+        dd += "</span>";
+        h += dd + "&nbsp;€&nbsp;" + parseFloat(obj.realPrice).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }); + "</td>";
+      } else {
+        h += "</td>";
       }
       var add = "";
       if (obj.additionalDiscount != "") {
@@ -746,240 +782,48 @@ loadedPages.checkout = {
       }
       obj["showPrice"] = "€&nbsp;" + parseFloat(obj.realPrice).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 });
         shoppingCartContent[key] = obj;
-      h += "<td style='text-align:right;color:red;'>" + dd + add + "</td>";
-      h += "<td style='padding-left:7px;text-align:right;'>€&nbsp;</td>";
-      h += "<td style='text-align:right;'>" + parseFloat(obj.realPrice).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
+      h += "<td style='text-align:right;'>&nbsp;€&nbsp;" + parseFloat(obj.toPay).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
       h += "</tr>";
     }
-    if (localStorage.invoiceDiscount != "") {
-      var ttd = "";
-      if (localStorage.invoiceDiscount != "") {
-        if (localStorage.invoiceDiscount.indexOf("%") > -1) {
-          ttd += "(" + localStorage.invoiceDiscount + ")";
-        } else {
-          ttd += "(€&nbsp;" + parseFloat(localStorage.discountAmount).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ")";
-        }
-      }
-      localStorage.discountAmount = Math.floor(parseFloat(localStorage.discountAmount));
-    //  h += "<tr><td></td><td></td><td colspan='3'  style='font-size: 5pt;padding-top:1px;padding-bottom:1px;'>Subtotal: </td><td style='padding-top:1px;padding-bottom:1px;text-align:right;'>€&nbsp;</td><td style='padding-top:1px;padding-bottom:1px;text-align:right;'>" + parseFloat(localStorage.grandTotal).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td></tr>";
-      h += "<tr><td></td><td></td><td style='padding-top:1px;padding-bottom:1px;text-align:right;' colspan='3'>Discount" + ttd + "</td><td style='padding-top:1px;padding-bottom:1px;text-align:right;'>€&nbsp;</td><td style='padding-top:1px;padding-bottom:1px;text-align:right;'>" + parseFloat(localStorage.discountAmount).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td></tr>";
-  //    h += "<tr><td></td><td></td><td colspan='3' style='padding-top:1px;padding-bottom:1px;'>Total: </td><td style='padding-top:1px;padding-bottom:1px;text-align:right;'>€&nbsp;</td><td style='padding-top:1px;padding-bottom:1px;text-align:right;font-size: 5pt;'>" + parseFloat(localStorage.total).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td></tr>";
-    }
+
     if (true) {
 
-      h += "<tr><td></td><td></td><td colspan='3' style='font-size:6pt;padding-left:10px;vartical-align:bottom;text-align:right;'>Total: </td><td style='border-top:1px solid #e2e2e2;text-align:right;font-size: 5pt;'>€&nbsp;</td><td style='border-top:1px solid #e2e2e2;text-align:right;font-size: 5pt;'>" + (parseFloat(localStorage.grandTotal) - parseFloat(localStorage.discountAmount)).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td></tr>";
-    }
-    if (localStorage.directRefund == "1") {
-      var bb = parseInt(localStorage.torefund);
-
-      h += "<tr><td></td><td></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;'>VAT refund: </td><td style='text-align:right;font-size: 5pt;'>€&nbsp;</td><td style='text-align:right;font-size: 5pt;'>" + bb.toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 })  + "</td></tr>";
-      h += "<tr><td></td><td></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;'>To be paid: </td><td style='border-top:1px solid #e2e2e2;text-align:right;font-size: 5pt;'>€&nbsp;</td><td style='border-top:1px solid #e2e2e2;text-align:right;font-size: 5pt;'>" + parseInt(localStorage.payWithRefund).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 })  + "</td></tr>";
-
+  //    h += "<tr><td></td><td></td><td colspan='3' style='font-size:6pt;padding-left:10px;vartical-align:bottom;text-align:right;'>Total: </td><td style='border-top:1px solid #e2e2e2;text-align:right;font-size: 5pt;'>€&nbsp;</td><td style='border-top:1px solid #e2e2e2;text-align:right;font-size: 5pt;'>" + (loadedpages.checkout.t1).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td></tr>";
     }
 
     var tobepaid = 0;
 
-    if (localStorage.directRefund == "1") {
-      $("#dfund").show();
-      $("#dfamount").html("€ " + (parseFloat(localStorage.torefund) - 0).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-      tobepaid = parseInt(localStorage.total) - parseFloat(localStorage.torefund);
-    } else {
-      $("#dfund").hide();
-      tobepaid = parseInt(localStorage.total);
-    }
-    $(h).appendTo($("#mTableBody"));
+
+
   /*  h = "<tr><td style='width:100%;font-size: 5pt;'>Total amount to be paid:</td>";
     h += "<td style='width:100px;text-align:left;font-size: 5pt;border-bottom:1px solid #e2e2e2;'>€</td>";
     h += "<td style='width:100px;text-align:right;font-size: 5pt;border-bottom:1px solid #e2e2e2;'>" + parseFloat(tobepaid).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
     h += "</tr>";
     $(h).appendTo($("#pTable"));*/
 
-
-    h = "";
-    h += "<tr><td style='width:100%;text-align: left;font-size: 5pt;'>Total amount incl. VAT:</td>";
-    h += "<td style='width:100px;text-align:left;padding-right:10px;font-size: 5pt;'>€</td>";
-    h += "<td style='width:100px;text-align:right;font-size: 5pt;'>" + parseFloat(localStorage.total).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
+    var vv = (parseFloat(loadedPages.checkout.t1) / 1.21).toFixed(2);
+    h += "<tr><td></td><td></td><td style='border-top:1px solid #e2e2e2;width:100%;text-align: right;font-size: 5pt;'>VAT excluding:</td>";
+    h += "<td style='border-top:1px solid #e2e2e2;width:100px;text-align:right;font-size: 5pt;'>€&nbsp;" + parseFloat(vv).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
     h += "</tr>";
 
-    h += "<tr><td style='width:100%;text-align: left;font-size: 5pt;'>Total amount excl. VAT:</td>";
-    h += "<td style='width:100px;text-align:left;padding-right:10px;font-size: 5pt;'>€</td>";
-    h += "<td style='width:100px;text-align:right;font-size: 5pt;'>" + parseFloat(localStorage.vatexcluded).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
+    h += "<tr><td></td><td></td><td style='width:100%;text-align: right;font-size: 5pt;'>VAT 21%:</td>";
+    h += "<td style='width:100px;text-align:right;font-size: 5pt;'>€&nbsp;" +  (parseFloat(loadedPages.checkout.t1) - vv).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
     h += "</tr>";
 
-    h += "<tr><td style='width:100%;text-align: left;font-size: 5pt;'>VAT 21%:</td>";
-    h += "<td style='width:100px;text-align:left;padding-right:10px;font-size: 5pt;'>€</td>";
-    h += "<td style='width:100px;text-align:right;font-size: 5pt;'>" + parseFloat(localStorage.vat).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
+    h += "<tr><td></td><td></td><td style='width:100%;text-align: right;font-size: 5pt;'>Total due:</td>";
+    h += "<td style='width:100px;text-align:right;font-size: 5pt;'>€&nbsp;" + parseFloat(loadedPages.checkout.t1).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
     h += "</tr>";
-    var dt = $("#countries").select2('data');
-    localStorage.isEU = dt[0].eu;
-    if (localStorage.isEU == "0") {
-      var bb = parseFloat(localStorage.torefund);
-      h += "<tr><td style='width:100%;text-align: left;font-size: 5pt;'>Admin Charge:</td>";
-      h += "<td style='width:100px;text-align:left;padding-right:10px;font-size: 5pt;'>€</td>";
-      h += "<td style='width:100px;text-align:right;font-size: 5pt;'>" + parseFloat(parseFloat(localStorage.admincharge) - 0).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
-      h += "</tr>";
+    h += "<tr><td colspan='4' style='white-space:normal;text-align:center;padding-top:15px;'>In case of any problem please contact support@costerdiamonds.com. Reffer to your invoice number and your payment id <b>Stripe " + loadedPages.checkout.stripeResponse.id + "</b>.</td>"
 
-      h += "<tr><td style='width:100%;text-align: left;font-size: 5pt;'>Vat Refund amount:</td>";
-      h += "<td style='width:100px;text-align:left;padding-right:10px;font-size: 5pt;'>€</td>";
-      h += "<td style='width:100px;text-align:right;font-size: 5pt;'>" + bb.toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
-      h += "</tr>";
-      if (localStorage.directRefund == "0") {
-        $("[norefund]").show();
-      }
-      if (localStorage.directRefund == "1") {
-        $("[refund]").show();
-      }
-    }
-    $(h).appendTo($("#summary"));
-    var tpaid = 0;
-    var chpaid = 0;
-    var fp = true;
-    for (var key in payments) {
 
-      var pay = payments[key];
-      if (fp) {
-        var pad =  "padding-top:10px;";
-        fp = false;
-      } else {
-        var pad = "";
-      }
-      console.log(pay);
-      if (pay.paymentID != "7" && pay.paymentID != "2") {
-          h = "<tr><td></td><td></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;'>" + pay.paymentMethod + ": </td><td style='text-align:right;font-size: 5pt;'>€&nbsp;</td><td style='text-align:right;font-size: 5pt;'>" + parseFloat(pay.original).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 })  + "</td></tr>";
 
-      /*    h = "<tr><td style='" + pad + "width:100%;font-size: 5pt;text-align:right;'>" + pay.paymentMethod + "</td>";
-          h += "<td style='" + pad + "text-align:left;font-size: 5pt;'>"+ "€&nbsp;" + "</td>";
-          h += "<td style='" + pad + "width:100px;text-align:right;font-size: 5pt;'>" + parseFloat(pay.original).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
-          h += "</tr>";*/
-
-          if (pay.currency != "EUR") {
-            h = "<tr><td></td><td></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;'>" + pay.paymentMethod + ": </td><td style='text-align:right;font-size: 5pt;'>€&nbsp;</td><td style='text-align:right;font-size: 5pt;'>" + parseFloat(pay.original).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 })  + "</td></tr>";
-            h += "<tr><td></td><td></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;'></td><td style='text-align:right;font-size: 5pt;'></td><td style='text-align:right;font-size: 4pt;'>(" + pay.paymentMethod + " " + pay.currency + " " + parseFloat(pay.amount).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ")</td></tr>";
-      /*      h = "<tr><td></td><td></td><td  style='font-size:5pt;padding-left:10px;text-align:right;'></td><td style='text-align:right;font-size: 5pt;'>€&nbsp;</td><td style='text-align:right;font-size: 5pt;'>(" + pay.paymentMethod + " " + pay.currency + " " + parseFloat(pay.amount).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ")</td></tr>";
-            h += "<tr><td></td><td></td><td></td>";
-            h += "<td style='width:100px;text-align:left;font-size: 5pt;'></td>";
-            h += "<td style='width:100px;text-align:right;font-size: 4pt;color: #e5e5e;'>(" + pay.paymentMethod + " " + pay.currency + " " + parseFloat(pay.amount).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ")</td>";
-            h += "</tr>";*/
-          }
-          if (pay.paymentID != "2") {
-            tpaid += parseFloat(pay.original);
-          }
-          if (pay.paymentID == "1") {
-              chpaid += parseFloat(pay.original);
-          }
-          $(h).appendTo($("#mTableBody"));
-      }
-    }
-    var pdiff = (parseFloat(localStorage.total) / 100) * 1;
-    if ((tpaid > tobepaid)) {
-      h = "<tr><td></td><td><div style='min-height:10px;'></div></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;'></td><td style='text-align:right;font-size: 5pt;'></td><td style='text-align:right;font-size: 5pt;'></td></tr>";
-
-    /*  h = "<tr><td style='width:100%;font-size: 5pt;'><div style='min-height:10px;'></div></td>";
-      h += "<td style='width:100px;text-align:left;font-size: 5pt;'></td>";
-      h += "<td style='width:100px;text-align:right;font-size: 5pt;'></td>";
-      h += "</tr>";*/
-      $(h).appendTo($("#mTableBody"));
-      h = "<tr><td></td><td></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;color:black;'>Change: </td><td style='text-align:right;font-size: 5pt;'>€</td><td style='text-align:right;font-size: 5pt;'>" + parseInt(tpaid - tobepaid).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 })  + "</td></tr>";
-
-    /*  h = "<tr><td style='width:100%;font-size: 5pt;color:black;text-align:right;'>Change</td>";
-      h += "<td style='color:black;text-align:left;font-size: 5pt;'>"+ "€" + "</td>";
-      h += "<td style='color:black;text-align:right;font-size: 5pt;'>" + parseInt(tpaid - tobepaid).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</td>";
-      h += "</tr>";*/
-      $(h).appendTo($("#mTableBody"));
-    }
-    var tp = tobepaid - tpaid;
-    if (tp < 0) {
-      var tt = 0;
-    } else {
-      var tt = tp;
-    }
-    h = "<tr><td></td><td><div style='min-height:10px;'></div></td><td colspan='3' style='font-size:5pt;padding-left:10px;text-align:right;'><b>Total amount due: </b></td><td style='border-top: 2px solid #e5e5e5;color:black;text-align:right;font-size: 5pt;'>&nbsp;€</td><td style='border-top: 2px solid #e5e5e5;color:black;text-align:right;font-size: 5pt;'><b>" + parseInt(tt).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</b></td></tr>";
-
-/*    h = "<tr><td style='width:100%;font-size: 5pt;color:black;text-align:right;'><b>Total amount due:</b></td>";
-    h += "<td style='border-top: 2px solid #e5e5e5;color:black;text-align:left;font-size: 5pt;'>"+ "<b>€</b>" + "</td>";
-    h += "<td style='border-top: 2px solid #e5e5e5;color:black;text-align:right;font-size: 5pt;'><b>" + parseInt(tt).toLocaleString("nl-NL",{ minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "</b></td>";
-    h += "</tr>";*/
     $(h).appendTo($("#mTableBody"));
 
-    if (chpaid > 10000) {
-      $("#cacheover").show();
-    }
-    if (localStorage.isEU == "0" && localStorage.directRefund =="0") {
-      $("#vatform").show();
-    }
-    if (localStorage.isEU == "0" && localStorage.directRefund =="1") {
-      $("#fastrefund").show();
-    }
-    var node = document.getElementById('invoice');
-    $.LoadingOverlay("show", optionsLoader);
-  //  var invoiceID = ((  localStorage.invoiceID === undefined) ? "" : localStorage.invoiceID);
+    $("#inm").html(iid);
+        return;
 
-    var tour = $.parseJSON(localStorage.tour);
 
-    $("#inm").html(invoiceID);
-   if (invoiceID == "") {
-     if (localStorage.discountAmount == "") {
-       localStorage.discountAmount = 0;
-     }
-     if (isNaN(parseFloat(localStorage.discountAmount))) {
-       localStorage.discountAmount = 0;
-     }
-       var obj = {
 
-           customerid: $("#customerid").val(),
-           showroom: localStorage.showRoomName,
-           salesPerson: $.parseJSON(localStorage.sp)["Employee"],
-           tourNo:  tour.ProjId,
-           total:  parseFloat(localStorage.grandTotal),
-           discount: localStorage.invoiceDiscount,
-           discountAmount:  parseFloat(localStorage.discountAmount),
-           discountApproved: localStorage.dapproved,
-           discountApprovedName: localStorage.dapprovedname,
-           salePersonId: $.parseJSON(localStorage.sp)["EmplID"],
-           dueAmount: tobepaid,
-        //   pdf:  nm + "_" + "gb" + ".pdf",
-        //   documentName :  nm,
-           documentLanguages: "gb",
-           showroomid: $("#srooms").val(),
-           salePersonId: $.parseJSON(localStorage.sp)["EmplID"],
-           status: "1",
-           vatExcluded: parseFloat(localStorage.vatexcluded),
-           vat: parseFloat(localStorage.vat),
-           vatRefund: parseFloat(localStorage.torefund) - parseFloat(localStorage.admincharge),
-           directRefund: localStorage.directRefund,
-          adminCharge: parseFloat(localStorage.admincharge)
-         }
-
-       } else {
-         if (isNaN(parseFloat(localStorage.discountAmount))) {
-           localStorage.discountAmount = 0;
-         }
-         var obj = {
-           invoiceid: invoiceID,
-           customerid: $("#customerid").val(),
-           showroom: localStorage.showRoomName,
-           salesPerson: $.parseJSON(localStorage.sp)["Employee"],
-           tourNo:  tour.ProjId,
-           total:  parseFloat(localStorage.grandTotal),
-           discount: localStorage.invoiceDiscount,
-           discountAmount:  parseFloat(localStorage.discountAmount),
-           salePersonId: $.parseJSON(localStorage.sp)["EmplID"],
-           dueAmount: tobepaid,
-        //   pdf:  nm + "_" + "gb" + ".pdf",
-        //   documentName :  nm,
-           documentLanguages: "gb",
-           showroomid: $("#srooms").val(),
-           salePersonId: $.parseJSON(localStorage.sp)["EmplID"],
-           status: "1",
-           vatExcluded: parseFloat(localStorage.vatexcluded),
-           vat: parseFloat(localStorage.vat),
-           vatRefund: parseFloat(localStorage.torefund) - parseFloat(localStorage.admincharge),
-           directRefund: localStorage.directRefund,
-           adminCharge: parseFloat(localStorage.admincharge)
-
-         }
-
-       }
        if (obj.vatRefund == "") {
          obj.vatRefund == "0";
        }

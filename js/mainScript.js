@@ -94,7 +94,7 @@ document.getElementById('save-png').addEventListener('click', function () {
   if (signaturePad.isEmpty()) {
      $("#customerSignature").attr("src", "");
      try {
-      loadedPages.checkout.generateInvoice();
+    //  loadedPages.checkout.generateInvoice();
     } catch(err) {
 
     }
@@ -103,7 +103,7 @@ document.getElementById('save-png').addEventListener('click', function () {
 
 
  $("#customerSignature").attr("src", data);
- loadedPages.checkout.generateInvoice();
+// loadedPages.checkout.generateInvoice();
 });
 
 

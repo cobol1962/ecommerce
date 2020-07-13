@@ -296,7 +296,7 @@
       </div>
 
   </form>
-  <button class="btn-black" onclick="$('body').LoadingOverlay('show', optionsLoader);$('#toggleShoppigCart').addClass('empty');shoppingCartContent=[];$('#4').hide();loadedPages.checkout.generateInvoice();">CONFIRM</button>
+  <button class="btn-black" onclick="$('body').LoadingOverlay('show', optionsLoader);$('#toggleShoppigCart').addClass('empty');$('#4').hide();loadedPages.checkout.generateInvoice();">CONFIRM</button>
 </div>
 <div id="invoice" style="font-family:'Calibri Light';background-color: white;border:none;height:561px;width:400px;padding-bottom:20px;">
   <style>
@@ -366,19 +366,17 @@
       <div id="info" style="width:50%;float:right;margin-top:40px;text-align:right;"">
 
           <span>Invoice Number: <span id="inm"></span></span>
-          <br /><span>Tour number: <span><span id="tnmbr"></span>
           <br />
           <br />
-          Questions? Email your <br />
-          diamond consultant<br />
-          <span id="consultant"></span>
+          Questions? Email us <br />
+          <span id="consultant">support@costerdiamnonds.com</span>
       </div>
       <div>
     <div style="margin-top:20px;width:400px;float:left;border-bottom: 1px solid #F2F2F2;">
       <span style="color:grey;" id="invoiceDate"></span><span style="float:right" id="servedby"></span>
     </div>
 
-  <table id="mTable" style="border-collapse: collapse;font-size:6pt;display: table;position: releative;bottom: 0px;width:400px;max-width:400px;">
+  <table id="mTable" style="table-layout:fixed;border-collapse: collapse;font-size:6pt;display: table;position: releative;bottom: 0px;width:400px;max-width:400px;">
 
     <tbody id="mTableBody">
     </tbody>
