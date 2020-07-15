@@ -11,8 +11,6 @@ loadedPages.checkout = {
   t1: 0,
   stripeResponse: {},
   initialize: function() {
-
-
   api.call("getExcangeRates", function(res) {
     $.each(res, function() {
 
@@ -275,23 +273,31 @@ loadedPages.checkout = {
               }
             },
             submitHandler: function(form) {
-                var obj = {};
-                $.each($("#shippingForm").find("[name]"), function() {
-                  obj[$(this).attr("name").substring(1)] = $(this).val();
-                })
 
-                obj["country"] = $("#countries").select2("data")[0].text;
-                obj["countryCode"] = $("#countries").select2("data")[0].id;
-                obj["invoiceid"] = loadedPages.checkout.invoiceID;
-                  api.call("insertWebShipping", function(res) {
-alert(JSON.stringify(res));
-                        if (res.status == "ok") {
-                            $('body').LoadingOverlay('show', optionsLoader);
-                            $('#toggleShoppigCart').addClass('empty');
-                            $('#4').hide();
-                            loadedPages.checkout.generateInvoice();
-                        }
-                    }, obj, {},{})
+                var ww = setInterval(function() {
+                  if (loadedPages.checkout.invoiceID != "") {
+
+                    clearInterval(ww);
+                        var o = {};
+                        $.each($("#shippingForm").find("[name]"), function() {
+                          o[$(this).attr("name").substring(1)] = $(this).val();
+                        })
+
+                        o["country"] = $("#countries").select2("data")[0].text;
+                        o["email"] = $("#email").val();
+                        o["countryCode"] = $("#countries").select2("data")[0].id;
+                        o["invoiceid"] = loadedPages.checkout.invoiceID;
+                        api.call("insertWebShipping", function(res) {
+                              if (res.status == "ok") {
+                                  $('body').LoadingOverlay('show', optionsLoader);
+                                  $('#toggleShoppigCart').addClass('empty');
+                                  $('#4').hide();
+
+                              }
+                          }, o, {},{})
+                    }
+                }, 200);
+                  loadedPages.checkout.generateInvoice();
             }
           });
 
@@ -731,7 +737,8 @@ alert(JSON.stringify(res));
     }
     api.call("insertWebInvoice", function(res) {
       if (res.status == "ok") {
-        var nm = "WebInvoice_" + moment(new Date()).format("YYYYMMDD") + "_" + "8" + res.invoiceid.toString().padStart(5, "0") + ".pdf";
+        var nm = "WebInvoice_" + moment(new Date()).format("YYYYMMDD") + "_" + "8" + res.invoiceid.toString().padStart(5, "0");
+        loadedPages.checkout.invoiceID = res.invoiceid;
         var obj = {
           invoiceid: res.invoiceid,
           pdf: nm
@@ -857,7 +864,7 @@ alert(JSON.stringify(res));
   sadr += ($("#saddress2").val() != "") ? ($("#saddress2").val() + "<br />") : "";
    sadr += $("#szip").val() + "&nbsp;" + $("#scity").val() + "<br />";
    sadr += $("#stelephone").val() + "<br />";
-   sadr += $("#countries").val();
+   sadr += $("#countries").val() + " " + $("#countries").select2("data")[0].text;
     h += "<tr><td colspan='4' style='white-space:normal;text-align:left;padding-top:15px;'>" + sadr + "</td>"
 
 
@@ -865,151 +872,55 @@ alert(JSON.stringify(res));
     $(h).appendTo($("#mTableBody"));
 
     $("#inm").html(iid);
-        return;
+    var nm = pdf;
+    var html = $("#invoice")[0].outerHTML;
+    $.ajax({
+      url: "http://85.214.165.56:5100",
+      type: 'POST',
+      dataType: "json",
+      data: {
+        createPDF: "1",
+        html: html,
+        name: nm
+      },
+      success: function(res) {
 
-
-
-       if (obj.vatRefund == "") {
-         obj.vatRefund == "0";
+        var mail =  {
+             from: "costerdiamonds@gmail.com",
+             customer: $("#email").val(),
+             customerName: $("#name").val(),
+             name: nm + "_" + "gb" + ".pdf",
+             subject: "Invoice",
+             text: "Generated " + (new Date()),
+             user: "cobol1962@gmail.com",
+             mode: 3,
+             invoiceid: invoiceID,
+             date: moment(new Date()).format("DD-MM-YYYY"),
+             invoiceNumber: invoiceID
        }
-       if (obj.adminCharge == "") {
-         obj.adminCharge == "0";
-       }
-
-         api.call(((invoiceID == "") ? "insertInvoice" : "updateInvoiceDocuments"), function(res) {
-console.log(res)
-           if (res.status == "ok") {
-             loadedPages.checkout.currentInvoice = invoiceID.toString().padStart(5, "0");
-             invoiceID = res.invoiceid;
-            localStorage.invoiceID =  res.invoiceid;
-              var nm = "SalesInvoice_" + moment(new Date()).format("YYYYMMDD") + "_" + "9" + invoiceID.toString().padStart(5, "0");
-              localStorage.documentName = nm;
-               documentName = nm;
-              var obj1 = {
-                invoiceid: invoiceID,
-                pdf:  nm + "_" + "gb" + ".pdf",
-                documentName :  nm,
-              }
-            api.call("updateInvoicepdf", function(res) {
-
-            }, obj1, {}, {});
-            var ivoiceID = "9" + invoiceID.toString().padStart(5, "0");
-      //          var ivoiceID = "9" + 19.toString().padStart(5, "0");
-            $("#inm").html(ivoiceID);
-             api.call("deleteInvoiceBody", function(r) {
-             }, {invoiceid: invoiceID }, {}, {})
-             api.call("deleteInvoicePayments", function(r) {
-             }, {invoiceid: invoiceID }, {}, {})
-             for (var key in shoppingCartContent) {
-               var data = shoppingCartContent[key];
-               var obj = {};
-               var img = $(data["imageUrl"]);
-               console.log(data)
-               for (var k in data) {
-                 obj[k] = data[k];
-               }
-               obj["name"] = obj["productName"].split("<br />")[0];
-               obj["imageURL"] = "";
-               obj["invoiceid"] = invoiceID;
-
-               api.call("insertInvoiceBody", function(r) {
-                 console.log(r);
-               }, obj, {}, {});
-             }
-             for (var key in payments) {
-               var data = payments[key];
-               var obj = {};
-               for (var k in data) {
-                 obj[k] = data[k];
-               }
-               obj["invoiceid"] = invoiceID;
-               if (obj.paymentID != "7") {
-                 api.call("insertInvoicePayments", function(r) {
-                 }, obj, {}, {});
-               }
-             }
-             var ivoiceID = "9" + invoiceID.toString().padStart(5, "0");
-
-             var bc = textToBase64Barcode(ivoiceID);
-               // $.LoadingOverlay("hide");
-               $("#bar_image").attr("src", bc);
-               var html = $("#invoice")[0].outerHTML;
-               $.ajax({
-                 url: "http://85.214.165.56:5100",
-                 type: 'POST',
-                 dataType: "json",
-                 data: {
-                   createPDF: "1",
-                   html: html,
-                   name: nm
-                 },
-                 success: function(res) {
-
-                   var mail =  {
-                        from: "costerdiamonds@gmail.com",
-                        customer: $("#email").val(),
-                        customerName: $("#name").val(),
-                        name: nm + "_" + "gb" + ".pdf",
-                        subject: "Invoice",
-                        text: "Generated " + (new Date()),
-                        user: "cobol1962@gmail.com",
-                        mode: mode,
-                        invoiceid: invoiceID,
-                        date: moment(new Date()).format("DD-MM-YYYY"),
-                        invoiceNumber: ivoiceID
-                  }
-                  api.call("sendMail", function(res) {
-                    var txt = "";
-                    if (mode == 1) {
-                      txt = "Mail sent succesfully"
-                    }
-                    if (mode == 2) {
-                      txt = "Invoice created succesfully"
-                    }
-                    if (mode == 3) {
-                      txt = "Invoice created and sent succesfully"
-                    }
-                    setTimeout(function() {
-                        $.LoadingOverlay("hide");
-
-                        showModal({
-                          title: txt,
-                          allowBackdrop: false,
-                          showCancelButton: false,
-                          confirmCallback: function() {
-                            $("#4").show();
-                            $("#invoice").hide();
-                            if (mode != 1) {
-                              window.open("http://85.214.165.56:81/api/invoices/" +  nm + "_" + "gb" + ".pdf", '_system');
-                              $.LoadingOverlay("hide");
-                            }
-                            var t = $.parseJSON(localStorage.tour);
-                            if (t.custom !== undefined) {
-                              delete localStorage.tour;
-                            }
-                            resetLocalStorage();
-                            userData.activity = "Created invoice 9" + loadedPages.checkout.currentInvoice;
-                            api.call("createlog", function () {
-                                ws.send(JSON.stringify({action: "reloadadmin"}))
-                            }, userData, {}, {});
-                            loadPage('homepage')
-                          }
-                        })
-                      }, 4000);
-                  }, mail, {});
-                 }
-               })
-
-           } else {
-             showModal({
-                title: "Something went wrong",
-                showCancelButton: false
-             })
-
+       api.call("sendMail", function(res) {
+         var txt = "";
+         txt = "Invoice created and sent succesfully"
+         setTimeout(function() {
              $.LoadingOverlay("hide");
-             return false;
-           }
-         }, obj, {},{});
+
+             showModal({
+               title: txt,
+               allowBackdrop: false,
+               showCancelButton: false,
+               confirmCallback: function() {
+                 $("#4").show();
+                 $("#invoice").hide();
+                 window.open("http://85.214.165.56:81/api/invoices/" +  nm + "_" + "gb" + ".pdf", '_system');
+                 $.LoadingOverlay("hide");
+                 resetLocalStorage();
+                 loadPage('homepage')
+               }
+             })
+           }, 4000);
+         }, mail, {});
+        }
+      })
      },
      checkEmail: function() {
 

@@ -8,7 +8,9 @@ loadedPages.details = {
     $("#currency").bind("change", function() {
       loadedPages.details.drawMoney();
     });
+    $("#share").html("");
     loadedPages.details.itemid = window.location.hash.substring(1).split("?")[1];
+
     var dd = {
         itemid: loadedPages.details.itemid
 
@@ -44,6 +46,16 @@ loadedPages.details = {
       } else {
           $("#title").html("Diamond");
       }
+      var url = "http://85.214.165.56:81/ecommerce/share.php?itemid=" + loadedPages.details.itemid;
+      $('<button class="button" data-sharer="facebook" id="facebook_share" style="display:none;" data-url="' + url + '">Share on Facebook</button>').appendTo($("#share"));
+      $('<button class="button" id="twitter_share" style="display:none;" data-sharer="twitter" data-width="800" data-height="600" data-title="' + data.SerialName + '" data-url="' + url + '">Share</button>').appendTo($("#share"));
+      $('<button class="button" data-sharer="viber" style="display:none;" id="viber_share" data-title="' + data.SerialName + '" data-url="' + url + '">Share on Viber</button>').appendTo($("#share"));
+      $('<button class="button" id="whatsapp_share"  style="display:none;"  data-sharer="whatsapp" data-title="' + data.SerialName + '" data-url="' + url + '">Share on Whatsapp</button>').appendTo($("#share"));
+      window.Sharer.init();
+      $("<a facebook onclick=fireShare('facebook','" + loadedPages.details.itemid + "') style='cursor:pointer;'><img style='width:46px;margin-left: 10px;' src='images/facebook-share-icon.png' /></a>").appendTo($("#share"));
+      $("<a twitter onclick=fireShare('twitter','" + loadedPages.details.itemid + "') style='cursor:pointer;'><img style='width:46px;margin-left: 10px;' src='images/twitter-share-icon.png' /></a>").appendTo($("#share"));
+      $("<a twitter onclick=fireShare('viber','" + loadedPages.details.itemid + "') style='cursor:pointer;'><img style='width:46px;margin-left: 10px;' src='images/viber-share-icon.png' /></a>").appendTo($("#share"));
+      $("<a twitter onclick=fireShare('whatsapp','" + loadedPages.details.itemid + "') style='cursor:pointer;'><img style='width:56px;margin-left: 10px;' src='images/whatsapp-share-icon.jpg' /></a>").appendTo($("#share"));
 
       if (data.ImageName == "") {
         data.ImageName = "crown.png";

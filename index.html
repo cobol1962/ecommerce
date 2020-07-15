@@ -37,10 +37,7 @@
         * Enable inline JS: add 'unsafe-inline' to default-src
         * Enable eval(): add 'unsafe-eval' to default-src
     * Create your own at http://cspisawesome.com -->
-    <meta http-equiv="Content-Security-Policy" content="frame-src http://localhost:3000 http://localhost:80 http://85.214.165.56:81;
- default-src * data: gap: https://ssl.gstatic.com http://85.214.165.56:81 'unsafe-eval'
-  'unsafe-inline'; media-src *; img-src * http://85.214.165.56:81/catalog/images http://85.214.165.56:81 http://85.214.165.56:5000 data: content:;">
-     <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
+
      <script type="text/javascript">
        window.dataLayer = window.dataLayer || [];
        function gtag(){dataLayer.push(arguments);}
@@ -418,7 +415,7 @@ function hideCatalog() {
     <script type="text/javascript" src="js/api_csv.js"></script>
     <script type="text/javascript" src="js/SocialSharing.js"></script>
     <script type="text/javascript" src="js/jsbarcode.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sharer.js@latest/sharer.min.js"></script>
     <script type="text/javascript" src="js/jquery.dataTables.yadcf.js"></script>
     <script type="text/javascript" src="js/jquery.validate.js"></script>
     <script type="text/javascript" src="js/countrySelect.js"></script>
@@ -445,6 +442,20 @@ function hideCatalog() {
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-1B9XGM82BQ"></script>
 
     <script type="text/javascript">
+    function fireShare(media, cid) {
+    if (media == "facebook") {
+        FB.ui({
+            method: 'share',
+             display: 'popup',
+            href: "http://costercatalog.com:81/ecommerce/share.php?itemid=" + cid,
+        }, function(response){
+
+        });
+        return
+      }
+
+      $("#" + media + "_share").trigger("click");
+    }
     var onSuccess = function(result) {
     //    alert("Share completed? " + result.completed); // On Android apps mostly return false even while it's true
         console.log("Shared to app: " + result.app); // On Android result.app since plugin version 5.4.0 this is no longer empty. On iOS it's empty when sharing is cancelled (result.completed=false)
@@ -609,4 +620,15 @@ function checkIsLogged(nextpage) {
 
 }
 </style>
+<script>
+window.fbAsyncInit = function() {
+FB.init({
+  appId            : '774787439996701',
+  autoLogAppEvents : true,
+  xfbml            : true,
+  version          : 'v4.0'
+});
+};
+</script>
+<script async defer src="https://connect.facebook.net/en_US/sdk.js"></script>
 </html>

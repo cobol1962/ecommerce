@@ -268,13 +268,14 @@ function setWatches() {
         </tbody>
     </table>
 </div>
-<div main style="width:100%;min-width:100%;padding-bottom:10px;margin:-1px auto;height:55px;z-index: 1000;background-color: white;">
-    <span style="font-family:'Merriweather';font-size:22px;position:absolute;top:7px;left:10px;">Browse our products</span>
-    <div id="selectedFilters" style="padding-right:20px;position:relative;top:35px;left:13px;font-size:11px;padding-top: 5px;width:100%;min-width:100%;padding-bottom:5px;">
+<div main style="width:100%;min-width:100%;padding-bottom:10px;margin:-1px auto;height:95px;z-index: 1000;background-color: white;">
+    <div id="shareState" style="font-family:'Merriweather';font-size:22px;position:absolute;left:3px;"></div>
+    <span style="font-family:'Merriweather';font-size:18px;position:absolute;top:33px;left:10px;">Browse our products</span>
+    <div id="selectedFilters" style="padding-right:20px;position:relative;top:55px;left:13px;font-size:11px;padding-top: 5px;width:100%;min-width:100%;padding-bottom:5px;">
     </div>
-    <span style="position: absolute;right:70px;top:15px;">PRICE</span><div id="sortOrder" onclick="$(this).toggleClass('asc');sortTable();" class="sort"></div>
-    <img main id="fil" style="display:none;cursor:pointer;position: absolute;right:7px;top:15px;width:20px;"  onclick="toggleFilters();" src="http://85.214.165.56:81/coster/www/images/filtericon.png" />
-    <div class="row"  id="nn" style="margin:0;padding:5px;min-width:100%;position:relative;top:25px;">
+    <span style="position: absolute;right:70px;top:36px;">PRICE</span><div id="sortOrder" onclick="$(this).toggleClass('asc');sortTable();" class="sort"></div>
+    <img main id="fil" style="display:none;cursor:pointer;position: absolute;right:7px;top:34px;width:20px;"  onclick="toggleFilters();" src="http://85.214.165.56:81/coster/www/images/filtericon.png" />
+    <div class="row"  id="nn" style="margin:0;padding:5px;min-width:100%;position:relative;top:45px;">
         <div class="col-xs-2" style="display:flex;justify-content: center;padding:2px;">
             <button onclick="uncheckOptions('maingroup_options');yadcf.exResetFilters(catalogTable, [4]);yadcf.exFilterColumn(catalogTable, [[4, ['Rings`']]]);selectedFilters('Rings');" class="btn-filter">Rings</button>
         </div>
@@ -847,7 +848,22 @@ if (next) {
     window.addEventListener("message", receiveMessage, false);
     var loadcount = 1;
 
-    catalogTable = $('#products').DataTable({
+    // add share here
+  //  var url = "http://85.214.165.56:81/ecommerce/shareState.php";
+    $('<button class="button" data-sharer="facebook" id="facebook_c_share" style="display:none;" data-url="">Share on Facebook</button>').appendTo($("#shareState"));
+    $('<button class="button" id="twitter_c_share" style="display:none;" data-sharer="twitter" data-width="800" data-height="600" data-title="" data-url="">Share</button>').appendTo($("#shareState"));
+    $('<button class="button" data-sharer="viber" style="display:none;" id="viber_c_share" data-title="" data-url="">Share on Viber</button>').appendTo($("#shareState"));
+    $('<button class="button" id="whatsapp_c_share"  style="display:none;"  data-sharer="whatsapp" data-title="" data-url="">Share on Whatsapp</button>').appendTo($("#shareState"));
+    window.Sharer.init();
+    $("<a facebook onclick=fireShareState('facebook') style='cursor:pointer;'><img style='width:35px;margin-left: 10px;' src='images/facebook-share-icon.png' /></a>").appendTo($("#shareState"));
+    $("<a twitter onclick=fireShareState('twitter') style='cursor:pointer;'><img style='width:35px;margin-left: 10px;' src='images/twitter-share-icon.png' /></a>").appendTo($("#shareState"));
+    $("<a twitter onclick=fireShareState('viber') style='cursor:pointer;'><img style='width:35px;margin-left: 10px;' src='images/viber-share-icon.png' /></a>").appendTo($("#shareState"));
+    $("<a twitter onclick=fireShareState('whatsapp') style='cursor:pointer;'><img style='width:38px;margin-left: 10px;' src='images/whatsapp-share-icon.jpg' /></a>").appendTo($("#shareState"));
+    //
+    var savedState = {};
+    api.call("getWebState", function(res) {
+      savedState = $.parseJSON(res.state);
+      catalogTable = $('#products').DataTable({
         "info": false,
         "pagingType": "simple",
         "pageLength": 12,
@@ -1374,6 +1390,7 @@ if (next) {
         }
     })
 
+    }, {stateid: "1594745388924"}, {}, {})
     catalogTable.on('search.dt', function() {
         $("#items_div").attr("sheight", $("#items_div").height());
         $("#items_div").html("");
@@ -1978,6 +1995,48 @@ function sortTable() {
 function fireClosest(obj) {
 //  $(obj).closest(".executefilters").find(".btn-black").trigger("click");
 }
+function fireShareState(media) {
+  var st = catalogTable.state();
+  var id = st.time;
+  showModal({
+    title: "Enter share message text",
+    content: "<input id='statetext' style='font-size: 17px;width:100%' />",
+    allowBackdrop: false,
+    showCancelButton: false,
+    confirmButtonText: "SHARE",
+    confirmCallback: function() {
+      var obj = {
+        stateid: id,
+        text: $("#statetext").val(),
+        state: (JSON.stringify(st))
+      }
+      api.call("insertWebState", function(res) {
+        if (res.status == "ok") {
+          $.each($("#shareState").find("[data-url]"), function() {
+            $(this).attr("data-url", "http://costercatalog.com:81/ecommerce/shareState.php?id=" + id);
+          })
+          if (media == "facebook") {
+              FB.ui({
+                  method: 'share',
+                   display: 'popup',
+                  href: "http://costercatalog.com:81/ecommerce/shareState.php?id=" + id,
+              }, function(response){
+
+              });
+              return
+            }
+
+            $("#" + media + "_c_share").trigger("click");
+        }
+      }, obj, {}, {});
+
+  }
+ });
+}
+function reDrawTable(o) {
+  alert(o)
+  catalogTable.draw();
+}
 </script>
 <style>
  #filtersAndSortContainer { list-style-type: none; margin: 0; padding: 0; width: 60%; }
@@ -2094,7 +2153,7 @@ z-index: 2000;
   right: 33px;
   height:22px;
   min-height: 22px;
-  top:13px;
+  top:32px;
   width:30px;
   background-image: url(http://85.214.165.56:81/costerdemo/coster/www/images/down.png);
   background-size:contain;
