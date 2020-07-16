@@ -218,10 +218,10 @@ $('#discountApproved').on('show.bs.modal', function () {
         if (window.location.hash.indexOf("details") > -1) {
           loadPage("details", true, false,  {}, window.location.hash.split("?")[1])
         }
-        if (window.location.hash.indexOf("collection") > -1) {
-          alert("what now???????????????????????????????????????????????????")
-setTimeout(function() {
-          loadPage("invoice", true, false, {}, window.location.hash.split("?")[1]);
+        if (window.location.hash.indexOf("catalog?") > -1) {
+
+          setTimeout(function() {
+            loadPage("invoice", true, false, {}, window.location.hash.split("?")[1]);
         }, 3000);
         }
       }
@@ -396,13 +396,14 @@ function locationHashChanged() {
   if (location.hash == "") {
     loadPage("homepage");
   }
-  if (firstLoad && location.hash.indexOf("details") == -1) {
+  if (firstLoad && location.hash.indexOf("details") == -1 &&  location.hash.indexOf("catalog?") == -1) {
 
     firstLoad = false;
     loadPage1("homepage");
     return;
   }
-  if (firstLoad && location.hash.indexOf("details") > -1) {
+  if (firstLoad && location.hash.indexOf("details") > -1 &&  location.hash.indexOf("catalog?") > -1) {
+
     firstLoad = false;
   }
   var p = location.hash.substring(1).split("?")[0];

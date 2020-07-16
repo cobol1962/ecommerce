@@ -1,4 +1,7 @@
 <script type="text/javascript">
+  var filtersLoaded = false;
+  var firstTableLoad = true;
+  $("#items_div").hide();
 function changeCurrency(v) {
 
   $("#currency").val(v);
@@ -309,7 +312,7 @@ function setWatches() {
             <td style="text-align:left;vertical-align:bottom;"><span style="font-size:14px;float:left;">FILTER AND SORT RESULTS<span>
             </td>
             <td><span onclick="$('.all').trigger('click');toggleFilters();selectedFilters();" style="float:left;font-size:14px;margin-top:0px;">Reset</span></td>
-            <td><span onclick="yadcf.exFilterExternallyTriggered(catalogTable);toggleFilters();selectedFilters();sortTable();" style="float:right;font-size:14px;margin-top:0px;">Apply</span></td></tr></table>
+            <td><span onclick="toggleFilters();sortTable();" style="float:right;font-size:14px;margin-top:0px;">Apply</span></td></tr></table>
 
         </div>
   <!--      <div class="filters border" style="margin-top:20px;">
@@ -861,8 +864,9 @@ if (next) {
     $("<a twitter onclick=fireShareState('whatsapp') style='cursor:pointer;'><img style='width:38px;margin-left: 10px;' src='images/whatsapp-share-icon.jpg' /></a>").appendTo($("#shareState"));
     //
     var savedState = {};
-    api.call("getWebState", function(res) {
-      savedState = $.parseJSON(res.state);
+  //  api.call("getWebState", function(res) {
+  //    savedState = $.parseJSON(res.state);
+
       catalogTable = $('#products').DataTable({
         "info": false,
         "pagingType": "simple",
@@ -871,7 +875,9 @@ if (next) {
         "serverSide": true,
         "deferRender": true,
         "order": [[5, "desc"]],
+        "stateSave": true,
         "drawCallback": function(settings) {
+
           $("#navigation").remove();
           if (settings.aoData.length == "0" && !$("#div_filter").is(":visible")) {
             parent.showModal({
@@ -1366,7 +1372,10 @@ if (next) {
                   visibility: "visible"
               })
               // here nowrap
-
+              $.each($(".options_item"), function() {
+                var dv = $(this);
+                $(this).unbind("click");
+              });
               $.each($(".options_item"), function() {
                 var dv = $(this);
                 dv.bind("click", function() {
@@ -1386,171 +1395,211 @@ if (next) {
 
               collectFilters();
         //here
-          }, 2000);
+      }, 100);
         }
     })
 
-    }, {stateid: "1594745388924"}, {}, {})
+//    }, {stateid: "1594745388924"}, {}, {})
     catalogTable.on('search.dt', function() {
         $("#items_div").attr("sheight", $("#items_div").height());
         $("#items_div").html("");
 
     });
-
-
 function collectFilters() {
-var shouldReset = true;
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 0);
-$("#itemidSelected").html(vals);
+  /*$("#items_div").css({
+    visibility: "hidden"
+  })*/
+  $("#items_div").hide();
+  var dtimeout = null;
+    yadcf.exResetAllFilters(catalogTable);
+  var ld = "default";
+  if (window.location.hash.indexOf("?") > -1) {
+    ld = window.location.hash.split("?")[1];
+  }
 
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 14);
-if (vals.length > 0) {
- var vv = [];
- $.each(vals, function() {
-   vv.push(this.replace("`", ""));
- });
- if (vv.length > 0) {
-   shouldReset = false;
- }
- $("#materialSelected").html(vv.join(","));
- $.each($("#material_options").find("input"), function() {
-   if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
-     this.checked = true;
-     $(this).addClass("checked");
-   }
- })
-}
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 10);
-if (vals.length > 0) {
- var vv = [];
- $.each(vals, function() {
-   vv.push(this.replace("`", ""));
- });
- if (vv.length > 0) {
-   shouldReset = false;
- }
- $("#typesSelected").html(vv.join(","));
- $.each($("#types_options").find("input"), function() {
-   console.log($(this).closest("[vl]").attr("vl") + " " + vals.indexOf($(this).closest("[vl]").attr("vl")));
-   if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
-     this.checked = true;
-     $(this).addClass("checked");
-   }
- })
-}
+  var fltr = [0,11,2,4,14,9,15,16,10,8,5,17,18,6,7];
+  api.call("getWebState", function(res) {
+    var dt = $.parseJSON(res.state);
+    $.each(dt.columns, function(ind) {
+      if (fltr.indexOf(ind) > -1) {
 
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 9);
-if (vals.length > 0) {
- var vv = [];
- $.each(vals, function() {
-   vv.push(this.replace("`", ""));
- });
- if (vv.length > 0) {
-   shouldReset = false;
- }
- $("#cutSelected").html(vv.join(","));
- $.each($("#cut_options").find("input"), function() {
-   if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
-     this.checked = true;
-     $(this).addClass("checked");
-   }
- })
-}
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 8);
-if (vals.length > 0) {
- var vv = [];
- $.each(vals, function() {
-   vv.push(this.replace("`", ""));
- });
- if (vv.length > 0) {
-   shouldReset = false;
- }
- $("#brandSelected").html(vv.join(","));
- $.each($("#brand_options").find("input"), function() {
-   if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
-     this.checked = true;
-     $(this).addClass("checked");
-   }
- })
-}
+      if (this.search["search"] != "" && this.search["search"] != "-yadcf_delim-")
+    //    yadcf.exResetFilters(catalogTable, [ind]);
+        if (this.search["search"].indexOf("-yadcf_delim-") > -1) {
+          var fr = this.search["search"].substring(0,this.search["search"].indexOf("-"));
+          var t = this.search["search"].substring(this.search["search"].lastIndexOf("-") + 1);
+          var obj = {
+            from: fr,
+            to: t
+          };
 
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 16);
-if (vals.length > 0) {
- var vv = [];
- $.each(vals, function() {
-   vv.push(this.replace("`", ""));
- });
- if (vv.length > 0) {
-   shouldReset = false;
- }
- $("#colourSelected").html(vv.join(","));
- $.each($("#colour_options").find("input"), function() {
-   if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
-     this.checked = true;
-     $(this).addClass("checked");
-   }
- })
-}
+          yadcf.exFilterColumn(catalogTable, [[ind, obj]]);
+        } else {
+          yadcf.exFilterColumn(catalogTable, [[ind, this.search["search"]]]);
+        }
+      }
+    });
+    collectFilters1();
 
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 15);
-if (vals.length > 0) {
- var vv = [];
- $.each(vals, function() {
-   vv.push(this.replace("`", ""));
- });
- if (vv.length > 0) {
-   shouldReset = false;
- }
- $("#claritySelected").html(vv.join(","));
- $.each($("#clarity_options").find("input"), function() {
-   if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
-     this.checked = true;
-     $(this).addClass("checked");
-   }
- })
-}
-
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 5);
-$("#prfrom").val(vals.from);
-$("#prto").val(vals.to);
-if (vals.from != "" || vals.to != "") {
- $("#priceSelected").html(vals.from + " - " + vals.to);
-}
-
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 17);
-$("#stfrom").val(vals.from);
-$("#stto").val(vals.to);
-if (vals.from != "" || vals.to != "") {
- $("#stonesSelected").html(vals.from + " - " + vals.to);
-  shouldReset = false;
+  }, {stateid: ld}, {}, {});
 
 }
 
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 18);
-$("#wgfrom").val(vals.from);
-$("#wgto").val(vals.to);
-if (vals.from != "" || vals.to != "") {
- $("#weightsSelected").html(vals.from + " - " + vals.to);
-}
+function collectFilters1() {
+      var shouldReset = true;
 
-var vals = yadcf.exGetColumnFilterVal(catalogTable, 6);
-if (vals != "") {
- try {
-     $("[value='" + vals + "']")[0].checked = true;
-     if (vals == "!discount=0") {
-       $("#discountSelected").html("No Discount");
-     } else {
-       $("#discountSelected").html("Discount");
-     }
-   } catch(err) {
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 0);
+      $("#itemidSelected").html(vals);
 
-   }
-}
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 14);
+      if (vals.length > 0) {
+       var vv = [];
+       $.each(vals, function() {
+         vv.push(this.replace("`", ""));
+       });
+       if (vv.length > 0) {
+         shouldReset = false;
+       }
+       $("#materialSelected").html(vv.join(","));
+       $.each($("#material_options").find("input"), function() {
+         if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
+           this.checked = true;
+           $(this).addClass("checked");
+         }
+       })
+      }
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 10);
+      if (vals.length > 0) {
+       var vv = [];
+       $.each(vals, function() {
+         vv.push(this.replace("`", ""));
+       });
+       if (vv.length > 0) {
+         shouldReset = false;
+       }
+       $("#typesSelected").html(vv.join(","));
+       $.each($("#types_options").find("input"), function() {
+         console.log($(this).closest("[vl]").attr("vl") + " " + vals.indexOf($(this).closest("[vl]").attr("vl")));
+         if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
+           this.checked = true;
+           $(this).addClass("checked");
+         }
+       })
+      }
 
-setTimeout(function() {
- toggleFilters();
- toggleFilters();
-}, 2000);
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 9);
+      if (vals.length > 0) {
+       var vv = [];
+       $.each(vals, function() {
+         vv.push(this.replace("`", ""));
+       });
+       if (vv.length > 0) {
+         shouldReset = false;
+       }
+       $("#cutSelected").html(vv.join(","));
+       $.each($("#cut_options").find("input"), function() {
+         if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
+           this.checked = true;
+           $(this).addClass("checked");
+         }
+       })
+      }
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 8);
+      if (vals.length > 0) {
+       var vv = [];
+       $.each(vals, function() {
+         vv.push(this.replace("`", ""));
+       });
+       if (vv.length > 0) {
+         shouldReset = false;
+       }
+       $("#brandSelected").html(vv.join(","));
+       $.each($("#brand_options").find("input"), function() {
+         if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
+           this.checked = true;
+           $(this).addClass("checked");
+         }
+       })
+      }
+
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 16);
+      if (vals.length > 0) {
+       var vv = [];
+       $.each(vals, function() {
+         vv.push(this.replace("`", ""));
+       });
+       if (vv.length > 0) {
+         shouldReset = false;
+       }
+       $("#colourSelected").html(vv.join(","));
+       $.each($("#colour_options").find("input"), function() {
+         if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
+           this.checked = true;
+           $(this).addClass("checked");
+         }
+       })
+      }
+
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 15);
+      if (vals.length > 0) {
+       var vv = [];
+       $.each(vals, function() {
+         vv.push(this.replace("`", ""));
+       });
+       if (vv.length > 0) {
+         shouldReset = false;
+       }
+       $("#claritySelected").html(vv.join(","));
+       $.each($("#clarity_options").find("input"), function() {
+         if (vals.indexOf($(this).closest("[vl]").attr("vl")) > -1) {
+           this.checked = true;
+           $(this).addClass("checked");
+         }
+       })
+      }
+
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 5);
+      $("#prfrom").val(vals.from);
+      $("#prto").val(vals.to);
+      if (vals.from != "" || vals.to != "") {
+       $("#priceSelected").html(vals.from + " - " + vals.to);
+      }
+
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 17);
+      $("#stfrom").val(vals.from);
+      $("#stto").val(vals.to);
+      if (vals.from != "" || vals.to != "") {
+       $("#stonesSelected").html(vals.from + " - " + vals.to);
+        shouldReset = false;
+
+      }
+
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 18);
+      $("#wgfrom").val(vals.from);
+      $("#wgto").val(vals.to);
+      if (vals.from != "" || vals.to != "") {
+       $("#weightsSelected").html(vals.from + " - " + vals.to);
+      }
+
+      var vals = yadcf.exGetColumnFilterVal(catalogTable, 6);
+      if (vals != "") {
+       try {
+           $("[value='" + vals + "']")[0].checked = true;
+           if (vals == "!discount=0") {
+             $("#discountSelected").html("No Discount");
+           } else {
+             $("#discountSelected").html("Discount");
+           }
+         } catch(err) {
+
+         }
+      }
+
+      setTimeout(function() {
+      $("#items_div").show();
+       toggleFilters();
+       toggleFilters();
+      }, 2000);
 }
     function receiveMessage(event) {
         var a = event.data.split("#");
@@ -1630,6 +1679,7 @@ function chackAddToInvoice() {
     }
 }
 function selectedFilters(mm = "") {
+  return false;
     if (mm != "") {
       $("#mainGroupSelected").html(mm);
     }
@@ -1728,8 +1778,7 @@ function selectDeselect(obj) {
   });
 }
 function fireMainGroups(fire = false) {
-
-  $("#mainGroupSelected").html("");
+$("#mainGroupSelected").html("");
   var sctd = [];
   var sctd_ex = [];
   $.each($("#maingroup_options").find(".options_item").find("[opt]"), function() {
@@ -1745,6 +1794,7 @@ function fireMainGroups(fire = false) {
 
     yadcf.exResetFilters(catalogTable, [4]);
     yadcf.exFilterColumn(catalogTable, [[4, sctd_ex]]);
+    selectedFilters(sctd_ex);
     closeFilter("maingroup");
   }
 //    alert("???")
@@ -2000,7 +2050,7 @@ function fireShareState(media) {
   var id = st.time;
   showModal({
     title: "Enter share message text",
-    content: "<input id='statetext' style='font-size: 17px;width:100%' />",
+    content: "<input id='statetext' placeholder='Share text' style='font-size: 17px;width:100%' />",
     allowBackdrop: false,
     showCancelButton: false,
     confirmButtonText: "SHARE",
@@ -2008,7 +2058,8 @@ function fireShareState(media) {
       var obj = {
         stateid: id,
         text: $("#statetext").val(),
-        state: (JSON.stringify(st))
+        state: (JSON.stringify(st)),
+        url: ""
       }
       api.call("insertWebState", function(res) {
         if (res.status == "ok") {
