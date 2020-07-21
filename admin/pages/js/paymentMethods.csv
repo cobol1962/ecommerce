@@ -1,0 +1,8 @@
+PaymentID;Payment;Rounding;IsVatRefund;IsAdminCharge;IsWWFTCheck
+1;Cash;0.05;0;0;1
+2;On account;0.01;0;0;0
+5;VAT refund;0.01;1;0;0
+6;Administration costs;0.01;0;1;0
+7;Payment difference;0.01;0;0;0
+919;Alipay / WeChat Pay;0.01;0;0;0
+926;Card payment;0;0;0;0

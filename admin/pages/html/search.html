@@ -1,0 +1,127 @@
+
+<div class="row row-eq-height" id="items_div">
+
+</div>
+
+<div id="master" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="display:none;padding-left:3px;padding-right: 3px;">
+   <div itemid="1360542" class="recycling">
+
+      <div itemname="18k white gold ring" itemid="" style="font-size:12px;min-width:100%;text-align:center;">
+        <img style="max-width: 100%;max-height:115px;" src="http://85.214.165.56:81/catalog/images/1360542w.jpg">
+      </div>
+       <span serial style="font-size:12px;"></span>
+      <div style="width:100%;min-width:100%;"><span productname="" style="margin-top:15px;font-weight:bold;font-size:12px;">18k white gold ring</span><br />
+      </div>
+      <div style="display:none;" colordescdiv="">18k white gold</div>
+      <div onclick="return false" style="min-width:100%;text-align:left;padding-left:0px;margin-top:0px;">
+         <div trigger="manual" data-placement="top" data-html="true" title="" style="display:none;padding-left: 3px;margin-block-end:0;margin:0;padding-top:3px;position:relative;top:2px;padding-bottom:3px;font-size:12px;width:calc(100% - 5px);">1=5.10 crt WES-H VS-1 emerald cut diamond</div>
+         <div style="font-size:12px;" compnamesdiv=""></div>
+      </div>
+      <div moneycontainer>
+      </div
+
+   </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" id="productDetailS">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="width:100%;text-align:center;border:none;padding:10px;">
+                <span style="fomt-weight:bold;padding-top:10px;width:100%;vertical-align: middle;text-align:center;background:white;color:black;">Select an item to add to cart</span>
+            </div>
+            <div class="modal-body" style="padding:5px;width:100%;text-align:center;margin-top:-15px;">
+                <div nobrowser style="padding:5px;width:100%;text-align:center;">
+          <!--        <img class='share' onclick="shareItem(this);" style='width:30px;margin-left:3px;margin-top:-3px;' src='http://85.214.165.56:81/coster/www/images/share.png' /> -->
+
+                </div>
+                <div id="modalImage" style="padding:5px;width:100%;text-align:center;"></div>
+                <div id="pDetails" style="margin:0px auto;padding:5px;width:100%;text-align:center;font-size:12px;"></div>
+                <table id="item_serails" class="table" style="font-size:12px;width:100%;margin-top:-12px;">
+                    <thead class="thead-dark">
+                        <th style="display:none;">Serial</th>
+                        <th>Serial</th>
+                        <th style="width:100%;">Serial Name</th>
+                        <th>Qnt</th>
+                    </thead>
+                    <tbody id="item_serials_body">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="ati" data-dismiss="modal" style="" onclick="loadedPages.search.checkAddToInvoice();" class="btn-bigblack" disabled><span style="width:100%;text-align:left;margin-top:5px;">ADD TO BAG</span></button>
+
+            </div>
+            <button type="button" class="close" style="position:absolute;top:10px;right:15px;" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">X</span></button>
+
+        </div>
+    </div>
+</div>
+
+<style>
+  #items_div {
+      padding-left: 20px;
+      padding-right: 7px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      max-height: calc(100vh - 40px);
+      position:relative;
+      top:30px;
+      overflow-y: auto;
+  }
+  .row-eq-height {
+      float: left;
+      width: 100%;
+      max-width: 100%;
+  }
+  .recycling {
+      float: left;
+      background-color: white;
+      border: none;
+      padding: 0;
+      min-height: 270px;
+      height: 270px;
+      max-height: 270px;
+      padding: 5px;
+      min-width: 100%;
+  }
+
+    div.productDetailS * {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    table.product-detail {
+        background: transparent;
+    }
+
+    div.productDetailS span {
+        font-size: 14px;
+        font-weight: bold;
+    }
+    #item_serials_body tr {
+        cursor: pointer;
+    }
+
+    #item_serials_body tr.selected {
+        background: #E2E2E2 !important;
+    }
+    #item_serials_body td, #item_serials_body th  {
+        padding: 3px;
+    }
+    .back {
+      min-width:100%;
+      height: 30px;
+      padding-left: 40px;
+      max-height: 30px;
+      min-height: 30px;
+      background-image: url(http://85.214.165.56:81/costerdemo/coster/www/images/arrow-left.png);
+      background-repeat: no-repeat;
+      background-position: left center;
+      background-size: contain;
+      position: absolute;
+      bottom: 0px;
+    }
+    .back p {
+      font-size: 22px;
+      font-weight: bold;
+    }
+</style>

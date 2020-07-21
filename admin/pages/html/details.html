@@ -1,0 +1,61 @@
+<div style="width:100%;text-align:center;">
+  <h3 id="title"></h3>
+  <table style="width:100%;">
+    <tr>
+      <td style="width:50%;">
+        <img id="itemImage" style="width:100%;max-height:70vh;height:auto;" />
+
+      </td>
+      <td  style="vertical-align:top;text-align:left;width:50%;">
+          <div id="share" style="width:100%;text-align:center;"></div>
+            <div id="description" style="width:100%;text-align:left;"></div>
+      </td>
+      </tr>
+    <tr>
+      <td colspan="2" id="foot">
+      </td>
+    </tr>
+
+  </table>
+</div>
+<div class="modal" tabindex="-1" role="dialog" id="orderQuantityDetail">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="width:100%;text-align:center;border:none;padding:10px;">
+                <span style="fomt-weight:bold;padding-top:10px;width:100%;vertical-align: middle;text-align:center;background:white;color:black;">Select an item to add to cart</span>
+            </div>
+            <div class="modal-body" style="padding:5px;width:100%;text-align:center;margin-top:-15px;">
+                <div nobrowser style="padding:5px;width:100%;text-align:center;">
+          <!--        <img class='share' onclick="shareItem(this);" style='width:30px;margin-left:3px;margin-top:-3px;' src='http://85.214.165.56:81/coster/www/images/share.png' /> -->
+                  <img  onclick="downloadItem(this);" style='width:26px;margin-left:3px;margin-top:-3px;' src='http://85.214.165.56:81/coster/www/images/download.png' />
+
+                </div>
+                <div id="modalImageOrder" style="padding:5px;width:100%;text-align:center;"></div>
+                <div id="pDetailsOrder" style="margin:0px auto;padding:5px;width:100%;text-align:center;font-size:12px;"></div>
+                <table id="item_serails" class="table" style="font-size:12px;width:100%;margin-top:-12px;">
+                    <thead class="thead-dark">
+                        <th style="display:none;">Serial</th>
+                        <th>Serial</th>
+                        <th style="width:100%;">Serial Name</th>
+                        <th>Qnt</th>
+                    </thead>
+                    <tbody id="item_serials_body">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="ati" data-dismiss="modal" style="position:fixed;bottom:4px;left:-4px;display:none;" onclick="chackAddToInvoice();" class="btn-bigblack" disabled><span style="width:100%;text-align:left;margin-top:5px;">ADD TO BAG</span></button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+  td {
+    padding: 10px;
+    vertical-align:top;
+  }
+  #foot {
+    text-align:center;
+  }
+</style>

@@ -1,0 +1,6 @@
+loadedPages.homepage = {
+  initialize: function() {
+  
+
+  }
+}

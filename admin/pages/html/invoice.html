@@ -1,7 +1,6 @@
 <script type="text/javascript">
   var filtersLoaded = false;
   var firstTableLoad = true;
-  var lastSQL = "";
   $("#items_div").hide();
 function changeCurrency(v) {
 
@@ -1395,15 +1394,11 @@ if (next) {
 
 
               collectFilters();
-
         //here
       }, 100);
         }
     })
-    catalogTable.on( 'xhr', function () {
-        var json = catalogTable.ajax.json();
-        lastSQL = json.sql;
-    } );
+
 //    }, {stateid: "1594745388924"}, {}, {})
     catalogTable.on('search.dt', function() {
         $("#items_div").attr("sheight", $("#items_div").height());
@@ -1418,39 +1413,34 @@ function collectFilters() {
   var dtimeout = null;
     yadcf.exResetAllFilters(catalogTable);
   var ld = "default";
-
   if (window.location.hash.indexOf("?") > -1) {
     ld = window.location.hash.split("?")[1];
   }
 
   var fltr = [0,11,2,4,14,9,15,16,10,8,5,17,18,6,7];
   api.call("getWebState", function(res) {
-    if (res.length == 0) {
-      collectFilters1()
-    } else {
-        var dt = $.parseJSON(res.state);
-        $.each(dt.columns, function(ind) {
-          if (fltr.indexOf(ind) > -1) {
+    var dt = $.parseJSON(res.state);
+    $.each(dt.columns, function(ind) {
+      if (fltr.indexOf(ind) > -1) {
 
-          if (this.search["search"] != "" && this.search["search"] != "-yadcf_delim-")
-        //    yadcf.exResetFilters(catalogTable, [ind]);
-            if (this.search["search"].indexOf("-yadcf_delim-") > -1) {
-              var fr = this.search["search"].substring(0,this.search["search"].indexOf("-"));
-              var t = this.search["search"].substring(this.search["search"].lastIndexOf("-") + 1);
-              var obj = {
-                from: fr,
-                to: t
-              };
+      if (this.search["search"] != "" && this.search["search"] != "-yadcf_delim-")
+    //    yadcf.exResetFilters(catalogTable, [ind]);
+        if (this.search["search"].indexOf("-yadcf_delim-") > -1) {
+          var fr = this.search["search"].substring(0,this.search["search"].indexOf("-"));
+          var t = this.search["search"].substring(this.search["search"].lastIndexOf("-") + 1);
+          var obj = {
+            from: fr,
+            to: t
+          };
 
-              yadcf.exFilterColumn(catalogTable, [[ind, obj]]);
-            } else {
-              std = this.search["search"].split("|");
-              yadcf.exFilterColumn(catalogTable, [[ind, std]]);
-            }
-          }
-        });
-        collectFilters1();
-    }
+          yadcf.exFilterColumn(catalogTable, [[ind, obj]]);
+        } else {
+          yadcf.exFilterColumn(catalogTable, [[ind, this.search["search"]]]);
+        }
+      }
+    });
+    collectFilters1();
+
   }, {stateid: ld}, {}, {});
 
 }
@@ -2056,7 +2046,6 @@ function fireClosest(obj) {
 //  $(obj).closest(".executefilters").find(".btn-black").trigger("click");
 }
 function fireShareState(media) {
-  alert(media)
   var st = catalogTable.state();
   var id = st.time;
   showModal({
@@ -2070,10 +2059,8 @@ function fireShareState(media) {
         stateid: id,
         text: $("#statetext").val(),
         state: (JSON.stringify(st)),
-        url: "",
-        sqlstring: btoa(lastSQL)
+        url: ""
       }
-      alert(JSON.stringify(obj));
       api.call("insertWebState", function(res) {
         if (res.status == "ok") {
           $.each($("#shareState").find("[data-url]"), function() {
@@ -2083,8 +2070,7 @@ function fireShareState(media) {
               FB.ui({
                   method: 'share',
                    display: 'popup',
-                  href: "http://costercatalog.com:81/ecommerce/shareState.php?id=" + id
-
+                  href: "http://costercatalog.com:81/ecommerce/shareState.php?id=" + id,
               }, function(response){
 
               });
@@ -2099,7 +2085,7 @@ function fireShareState(media) {
  });
 }
 function reDrawTable(o) {
-
+  alert(o)
   catalogTable.draw();
 }
 </script>

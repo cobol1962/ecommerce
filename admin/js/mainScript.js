@@ -36,6 +36,7 @@ function resetLocalStorage() {
 
 }
 function checkLogin() {
+
   /*  if (localStorage.sp !== undefined) {
         $("[login]").hide();
         $("[logout]").show();
@@ -81,6 +82,7 @@ $(document).ready(function() {
         ws.send(JSON.stringify({action: "reloadadmin"}))
     }, userData, {}, {});*/
   });
+
 
 
 setTimeout(function() {
