@@ -38,7 +38,7 @@ loadedPages.details = {
       }
     }
     api.call("getItemById", function(res) {
-
+    
       var data = res;
       loadedPages.details.data = res;
       if (loadedPages.details.diamond == "0") {
@@ -64,6 +64,7 @@ loadedPages.details = {
       var str = "";
 
       api.call("getItemDescription", function(res) {
+        console.log(res)
         if (data.CompName != null) {
           if (res["qnt"] != "0") {
             str += "<b>Total Stones:</b> " + res["qnt"] + " <br /><b>Total Weight:</b> " + res["weight"] + "crt" + "<br />";

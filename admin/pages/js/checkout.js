@@ -233,7 +233,8 @@ loadedPages.checkout = {
                 obj["country"] = $("#countries").select2("data")[0].text;
                 obj["countryCode"] = $("#countries").select2("data")[0].id;
               }
-
+              var ls = $.parseJSON(localStorage.viewSettings);
+              obj.afilliateid = ls.affiliateid;
               localStorage.customer = JSON.stringify(obj);
 
                     api.call("insertWebCustomer", function(res) {
@@ -726,6 +727,7 @@ loadedPages.checkout = {
   },
   generateInvoice: function() {
     var t = parseFloat(loadedPages.checkout.t1);
+    alert(localStorage.viewSettings)
     var obj = {
        customerid: localStorage.customerid,
        total: loadedPages.checkout.t1,
@@ -735,6 +737,9 @@ loadedPages.checkout = {
        vat: t - ((t / 1.21).toFixed(2)),
        stripe_id: loadedPages.checkout.stripeResponse.id
     }
+    var ls = $.parseJSON(localStorage.viewSettings);
+    obj["afilliateid"] = ls.afilliateid;
+    alert(JSON.stringify(obj));
     api.call("insertWebInvoice", function(res) {
       if (res.status == "ok") {
         var nm = "WebInvoice_" + moment(new Date()).format("YYYYMMDD") + "_" + "8" + res.invoiceid.toString().padStart(5, "0");
@@ -758,6 +763,8 @@ loadedPages.checkout = {
               obj["imageURL"] = "";
               obj["invoiceid"] = res.invoiceid;
               obj["total"] = parseInt(obj.quantity) * parseFloat(obj.realPrice);
+
+
               api.call("insertWebInvoiceBody", function(r) {
                 console.log(r);
               }, obj, {}, {});

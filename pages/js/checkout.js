@@ -233,7 +233,9 @@ loadedPages.checkout = {
                 obj["country"] = $("#countries").select2("data")[0].text;
                 obj["countryCode"] = $("#countries").select2("data")[0].id;
               }
+              var ls = $.parseJSON(localStorage.viewSettings);
 
+              obj.afilliateid = ls.afilliateid;
               localStorage.customer = JSON.stringify(obj);
 
                     api.call("insertWebCustomer", function(res) {
@@ -735,6 +737,8 @@ loadedPages.checkout = {
        vat: t - ((t / 1.21).toFixed(2)),
        stripe_id: loadedPages.checkout.stripeResponse.id
     }
+    var ls = $.parseJSON(localStorage.viewSettings);
+    obj["afilliateid"] = ls.afilliateid;
     api.call("insertWebInvoice", function(res) {
       if (res.status == "ok") {
         var nm = "WebInvoice_" + moment(new Date()).format("YYYYMMDD") + "_" + "8" + res.invoiceid.toString().padStart(5, "0");

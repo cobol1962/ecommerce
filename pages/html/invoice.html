@@ -2,6 +2,7 @@
   var filtersLoaded = false;
   var firstTableLoad = true;
   var lastSQL = "";
+  var initDone = false;
   $("#items_div").hide();
 function changeCurrency(v) {
 
@@ -273,29 +274,35 @@ function setWatches() {
     </table>
 </div>
 <div main style="width:100%;min-width:100%;padding-bottom:10px;margin:-1px auto;height:95px;z-index: 1000;background-color: white;">
-    <div id="shareState" style="font-family:'Merriweather';font-size:22px;position:absolute;left:3px;"></div>
+    <div id="shareState" style="font-family:'Merriweather';font-size:22px;position:absolute;left:3px;">
+      <div style="width:100%;">
+        <input style="float:left;" id="setName" placeholder="Data set name" />
+        <textarea rows="2" style="float:left;" id="setDesciption" placeholder="Data set description" />
+        <input  style="float:left;" id="setViewName" placeholder="Data set description" />
+      </div>
+    </div>
     <span style="font-family:'Merriweather';font-size:18px;position:absolute;top:33px;left:10px;">Browse our products</span>
     <div id="selectedFilters" style="padding-right:20px;position:relative;top:55px;left:13px;font-size:11px;padding-top: 5px;width:100%;min-width:100%;padding-bottom:5px;">
     </div>
     <span style="position: absolute;right:70px;top:36px;">PRICE</span><div id="sortOrder" onclick="$(this).toggleClass('asc');sortTable();" class="sort"></div>
     <img main id="fil" style="display:none;cursor:pointer;position: absolute;right:7px;top:34px;width:20px;"  onclick="toggleFilters();" src="http://85.214.165.56:81/coster/www/images/filtericon.png" />
-    <div class="row"  id="nn" style="margin:0;padding:5px;min-width:100%;position:relative;top:45px;">
-        <div class="col-xs-2" style="display:flex;justify-content: center;padding:2px;">
+    <div class="row"  id="nn" style="display:flex;flex-direction:row;margin:0;padding:5px;min-width:100%;position:relative;top:45px;">
+        <div what="Rings" style="display:none;justify-content: center;padding:2px;width:100%;">
             <button onclick="uncheckOptions('maingroup_options');yadcf.exResetFilters(catalogTable, [4]);yadcf.exFilterColumn(catalogTable, [[4, ['Rings`']]]);selectedFilters('Rings');" class="btn-filter">Rings</button>
         </div>
-        <div class="col-xs-2" style="display:flex;justify-content: center;padding:2px;">
+        <div what="Earrings" style="display:none;justify-content: center;padding:2px;width:100%;">
             <button onclick="uncheckOptions('maingroup_options');yadcf.exResetFilters(catalogTable, [4]);yadcf.exFilterColumn(catalogTable, [[4, ['Earrings`']]]);selectedFilters('Earrings');" class="btn-filter">Earrings</button>
         </div>
-        <div class="col-xs-2" style="display:flex;justify-content: center;padding:2px;">
+        <div  what="Bracelets" style="display:none;justify-content: center;padding:2px;width:100%;">
             <button onclick="uncheckOptions('maingroup_options');yadcf.exResetFilters(catalogTable, [4]);yadcf.exFilterColumn(catalogTable, [[4, ['Bracelets`']]]);selectedFilters('Bracelets');" class="btn-filter">Bracelets</button>
         </div>
-        <div class="col-xs-2" style="display:flex;justify-content: center;padding:2px;">
+        <div what="Pendants" style="display:none;justify-content: center;padding:2px;width:100%;">
             <button onclick="uncheckOptions('maingroup_options');yadcf.exResetFilters(catalogTable, [4]);yadcf.exFilterColumn(catalogTable, [[4, ['Pendants`']]]);selectedFilters('Pendants');" class="btn-filter">Pendants</button>
         </div>
-        <div class="col-xs-2" style="display:flex;justify-content: center;padding:2px;">
+        <div what="Necklaces" style="display:none;justify-content: center;padding:2px;width:100%;">
             <button onclick="uncheckOptions('maingroup_options');yadcf.exResetFilters(catalogTable, [4]);yadcf.exFilterColumn(catalogTable, [[4, ['Necklaces`']]]);selectedFilters('Necklaces');" class="btn-filter">Necklaces</button>
         </div>
-        <div class="col-xs-2" style="display:flex;justify-content: center;padding:2px;">
+        <div what="Watches" style="display:none;justify-content: center;padding:2px;width:100%;">
             <button onclick="uncheckOptions('maingroup_options');yadcf.exResetFilters(catalogTable, [4]);yadcf.exFilterColumn(catalogTable, [[4, ['Watches`']]]);selectedFilters('Watches');" class="btn-filter">Watches</button>
         </div>
     </div>
@@ -865,593 +872,579 @@ if (next) {
     $("<a twitter onclick=fireShareState('whatsapp') style='cursor:pointer;'><img style='width:38px;margin-left: 10px;' src='images/whatsapp-share-icon.jpg' /></a>").appendTo($("#shareState"));
     //
     var savedState = {};
-  //  api.call("getWebState", function(res) {
-  //    savedState = $.parseJSON(res.state);
+    var tn = "products_search";
+        catalogTable = $('#products').DataTable({
+                  "info": false,
+                  "pagingType": "simple",
+                  "pageLength": 12,
+                  "processing": false,
+                  "serverSide": true,
+                  "deferRender": true,
+                  "order": [[5, "desc"]],
+                  "stateSave": true,
+                  "drawCallback": function(settings) {
 
-      catalogTable = $('#products').DataTable({
-        "info": false,
-        "pagingType": "simple",
-        "pageLength": 12,
-        "processing": false,
-        "serverSide": true,
-        "deferRender": true,
-        "order": [[5, "desc"]],
-        "stateSave": true,
-        "drawCallback": function(settings) {
-
-          $("#navigation").remove();
-          if (settings.aoData.length == "0" && !$("#div_filter").is(":visible")) {
-            parent.showModal({
-              type: "error",
-              title: "No results",
-              showCancelButton: false,
-              confirmButtonText: "ADJUST SEARCH"
-            })
-            return false;
-          }
-          var info = catalogTable.page.info();
-
-            var ldv = null;
-            $.each($("#products").find("tbody").find("tr"), function(ind) {
-                i = ind;
-                var inject = $(this).find("td").eq(3).html();
-                var $dv = $($(this).find("td").eq(3).html());
-                if (inject !== undefined) {
-                    var img = $(this).find("td").eq(3).find("image");
-
-                    if ($("#items_div").find("[itemid='" + $dv.attr("itemid") + "']").length == 0) {
-                      var dv =  $("<div class='col-xs-6 col-sm-4 col-md-4 col-lg-2' style='padding-left:3px;padding-right: 3px;'><div  itemid='" + $dv.attr("itemid") + "' class='recycling'>" + $(this).find("td").eq(3).html() + "</div></div>").appendTo($("#items_div"));
-                      ldv = dv;
-
-                      if (dv.position().left <= 5) {
-                        dv.find(".colordesc").attr("data-placement", "left");
-                      }
-                      if (dv.position().right <= 5) {
-                        dv.find(".colordesc").attr("data-placement", "left");
-                      }
+                    $("#navigation").remove();
+                    if (settings.aoData.length == "0" && !$("#div_filter").is(":visible")) {
+                      parent.showModal({
+                        type: "error",
+                        title: "No results",
+                        showCancelButton: false,
+                        confirmButtonText: "ADJUST SEARCH"
+                      })
+                      return false;
                     }
-                }
-            })
+                    var info = catalogTable.page.info();
 
-        /*    $("#items_div").css({
-               height: $(window).height(),
-               minHeight: $(window).height(),
+                      var ldv = null;
+                      $.each($("#products").find("tbody").find("tr"), function(ind) {
+                          i = ind;
+                          var inject = $(this).find("td").eq(3).html();
+                          var $dv = $($(this).find("td").eq(3).html());
+                          if (inject !== undefined) {
+                              var img = $(this).find("td").eq(3).find("image");
 
-           })*/
-           if ($("#products").find("tbody").find("tr").length < 12) {
-               for (var i = $("#products").find("tbody").find("tr").length;i<($("#products").find("tbody").find("tr").length + 1);i++) {
-                 try {
-                 $("#items_div").html($("#items_div").html() + "<div style='visibility:hidden;'>" + ldv.html() + "<div>");
-               } catch(err) {
+                              if ($("#items_div").find("[itemid='" + $dv.attr("itemid") + "']").length == 0) {
+                                var dv =  $("<div class='col-xs-6 col-sm-4 col-md-4 col-lg-2' style='padding-left:3px;padding-right: 3px;'><div  itemid='" + $dv.attr("itemid") + "' class='recycling'>" + $(this).find("td").eq(3).html() + "</div></div>").appendTo($("#items_div"));
+                                ldv = dv;
 
-               }
-               }
-             }
-             $('<div class="row" id="navigation" style=""><div class="col-md-6 col-xs-6"><button id="pb" class="btn-black">TOP</div><div class="col-md-6 col-xs-6"><button id="nb" class="btn-black">LOAD MORE</div></div>').appendTo($("#items_div"));
-          //  alert(ldv.html());
-          $("#nb").bind("click", function() {
-            catalogTable.page('next').draw('page');
-          })
-          $("#pb").bind("click", function() {
-            $("#items_div").html("")
-                catalogTable.page(0).draw('page');
-          })
-        $.LoadingOverlay("hide");
-            $(window).scrollTop(0);
+                                if (dv.position().left <= 5) {
+                                  dv.find(".colordesc").attr("data-placement", "left");
+                                }
+                                if (dv.position().right <= 5) {
+                                  dv.find(".colordesc").attr("data-placement", "left");
+                                }
+                              }
+                          }
+                      })
 
-            setTimeout(function() {
-              $('.colordesc').tooltip({
-                  trigger: "click"
-              })
-              $('.compname').tooltip({
-                  trigger: "click"
-              })
+                  /*    $("#items_div").css({
+                         height: $(window).height(),
+                         minHeight: $(window).height(),
 
-            }, 1000);
+                     })*/
+                     if ($("#products").find("tbody").find("tr").length < 12) {
+                         for (var i = $("#products").find("tbody").find("tr").length;i<($("#products").find("tbody").find("tr").length + 1);i++) {
+                           try {
+                           $("#items_div").html($("#items_div").html() + "<div style='visibility:hidden;'>" + ldv.html() + "<div>");
+                         } catch(err) {
 
-            $('.recycling').unbind("click");
-            $(".recycling").bind("click", function(e) {
+                         }
+                         }
+                       }
+                       $('<div class="row" id="navigation" style=""><div class="col-md-6 col-xs-6"><button id="pb" class="btn-black">TOP</div><div class="col-md-6 col-xs-6"><button id="nb" class="btn-black">LOAD MORE</div></div>').appendTo($("#items_div"));
+                    //  alert(ldv.html());
+                    $("#nb").bind("click", function() {
+                      catalogTable.page('next').draw('page');
+                    })
+                    $("#pb").bind("click", function() {
+                      $("#items_div").html("")
+                          catalogTable.page(0).draw('page');
+                    })
+                  $.LoadingOverlay("hide");
+                      $(window).scrollTop(0);
 
-                if ($(e.target).hasClass("colordesc") || $(e.target).hasClass("compname")) {
+                      setTimeout(function() {
+                        $('.colordesc').tooltip({
+                            trigger: "click"
+                        })
+                        $('.compname').tooltip({
+                            trigger: "click"
+                        })
 
-                    e.stopPropagation();
-                    e.preventDefault();
-                } else {
-                    if ($('.colordesc').closest("[itemid]").find(".tooltip").length == 1) {
-                        $('.colordesc').tooltip("hide");
-                        $('.compname').tooltip("hide");
-                        return false;
-                    } else {
+                      }, 1000);
 
-                      if (!long) {
-                        showProductInfo(this);
-                      }
-                    }
-                }
-            })
-            $.each($("#products").find("tbody").find("tr"), function() {
-              $(this).remove();
-            })
+                      $('.recycling').unbind("click");
+                      $(".recycling").bind("click", function(e) {
 
-        },
-        "ajax": {
-            "url": "http://85.214.165.56:81/api/items.php",
-            "type": "POST"
-        },
-        "language": {
-            "infoFiltered": " - filtered from _MAX_ records"
-        },
-        "columns": [{
-            data: "ItemID",
-            width: 50
-        }, {
-            data: "ItemID",
-            width: 0
-        }, {
-            data: "imageName",
-            width: 60,
-            sortable: false
-        }, {
-            data: "productName",
-            "render": function(data, type, row) {
+                          if ($(e.target).hasClass("colordesc") || $(e.target).hasClass("compname")) {
 
-                //if (parseFloat(row["Discount"]) == 0) {
-                if (true) {
-                    var cc = $("#currency").val();
-                    var pr = (parseFloat(row["SalesPrice"])) * parseFloat($("#currency").find("option:selected").attr("rate"));
-                    var ds = parseFloat(row["Discount"]);
-                    var prc = parseInt(pr - ((pr / 100) * ds));
-                    //  var img = "http://85.214.165.56:81/coster/catalog/image/" + $(row["imageURL"]);
-                    if (row["imageName"] != "") {
-                        var src = "http://85.214.165.56:81/catalog/images/" + row["imageName"];
-                    } else {
-                        var src = "http://85.214.165.56:81/coster/www/images/crown.png";
-                    }
+                              e.stopPropagation();
+                              e.preventDefault();
+                          } else {
+                              if ($('.colordesc').closest("[itemid]").find(".tooltip").length == 1) {
+                                  $('.colordesc').tooltip("hide");
+                                  $('.compname').tooltip("hide");
+                                  return false;
+                              } else {
 
-                    html = "<div itemname='" + row["SerialName"] + "' itemid='" + row["ItemID"] + "' style='font-size:12px;min-width:100%;text-align:center;'>";
-                    html += "<img style='max-width: 100%;max-height:115px;' src='" + src + "' /></img>";
-                    html += "</div>";
-                    html += "<div style='width:100%;min-width:100%;'><span productname style='margin-top:15px;font-weight:bold;font-size:12px;'>" + row["SerialName"] + "";
-                    html += "</span>";
-                    html += "<span class='colordesc' onclick='return false' style='float:right;font-size:11px;margin-top:4px;' data-placement='left' trigger='manual' data-html='true' title='" + row["ColorDesc"].full.replace(/\|/g, "<br />") + "'>" + row["ColorDesc"].abbrv + "</span>";
-                    html += "</div>";
-                    html += "<div style='display:none;' colordescdiv>" + row["ColorDesc"].full.replace(/\|/g, "<br />") + "</div>";
-                    var ss = row["CompName"].split("|");
-                    if (ss.length > 0) {
-                        html += "<div " + ((ss.length > 1) ? "class='compnametop'" : "") + " onclick='return false'  style='min-width:100%;text-align:left;padding-left:0px;margin-top:0px;'>";
-                        $.each(ss, function(ind) {
-                          if (ind < 1) {
-                            html += "<div " + ((ss.length > 1) ? "class='compname'" : "") + " trigger='manual' data-placement='top' data-html='true' title=\'" + row["CompName"].replace(/\|/g, "<br />") + "\' style='display:inline-flex;padding-left: 3px;margin-block-end:0;margin:0;padding-top:3px;position:relative;top:2px;padding-bottom:3px;font-size:12px;width:calc(100% - 5px);'>" + this;
-                            if (ss.length < 2) {
-                              html += "</div><br />";
-                            } else {
-                              html += "<img src='http://85.214.165.56:81/coster/www/images/showright.png' style='margin-top: -3px;width:15px;max-height:20px;margin-left:5px;' /></spam></br>";
-                            }
+                                if (!long) {
+                                  showProductInfo(this);
+                                }
+                              }
+                          }
+                      })
+                      $.each($("#products").find("tbody").find("tr"), function() {
+                        $(this).remove();
+                      })
+
+                  },
+                  "ajax": {
+                      "url": "https://costercatalog.com/api/web_items.php?tn=" + localStorage.view_table,
+                      "type": "POST"
+                  },
+                  "language": {
+                      "infoFiltered": " - filtered from _MAX_ records"
+                  },
+                  "columns": [{
+                      data: "ItemID",
+                      width: 50
+                  }, {
+                      data: "ItemID",
+                      width: 0
+                  }, {
+                      data: "imageName",
+                      width: 60,
+                      sortable: false
+                  }, {
+                      data: "productName",
+                      "render": function(data, type, row) {
+
+                          //if (parseFloat(row["Discount"]) == 0) {
+                          if (true) {
+                              var cc = $("#currency").val();
+                              var pr = (parseFloat(row["SalesPrice"])) * parseFloat($("#currency").find("option:selected").attr("rate"));
+                              var ds = parseFloat(row["Discount"]);
+                              var prc = parseInt(pr - ((pr / 100) * ds));
+                              //  var img = "http://85.214.165.56:81/coster/catalog/image/" + $(row["imageURL"]);
+                              if (row["imageName"] != "") {
+                                  var src = "http://85.214.165.56:81/catalog/images/" + row["imageName"];
+                              } else {
+                                  var src = "http://85.214.165.56:81/coster/www/images/crown.png";
+                              }
+
+                              html = "<div itemname='" + row["SerialName"] + "' itemid='" + row["ItemID"] + "' style='font-size:12px;min-width:100%;text-align:center;'>";
+                              html += "<img style='max-width: 100%;max-height:115px;' src='" + src + "' /></img>";
+                              html += "</div>";
+                              html += "<div style='width:100%;min-width:100%;'><span productname style='margin-top:15px;font-weight:bold;font-size:12px;'>" + row["SerialName"] + "";
+                              html += "</span>";
+                              html += "<span class='colordesc' onclick='return false' style='float:right;font-size:11px;margin-top:4px;' data-placement='left' trigger='manual' data-html='true' title='" + row["ColorDesc"].full.replace(/\|/g, "<br />") + "'>" + row["ColorDesc"].abbrv + "</span>";
+                              html += "</div>";
+                              html += "<div style='display:none;' colordescdiv>" + row["ColorDesc"].full.replace(/\|/g, "<br />") + "</div>";
+                              var ss = row["CompName"].split("|");
+                              if (ss.length > 0) {
+                                  html += "<div " + ((ss.length > 1) ? "class='compnametop'" : "") + " onclick='return false'  style='min-width:100%;text-align:left;padding-left:0px;margin-top:0px;'>";
+                                  $.each(ss, function(ind) {
+                                    if (ind < 1) {
+                                      html += "<div " + ((ss.length > 1) ? "class='compname'" : "") + " trigger='manual' data-placement='top' data-html='true' title=\'" + row["CompName"].replace(/\|/g, "<br />") + "\' style='display:inline-flex;padding-left: 3px;margin-block-end:0;margin:0;padding-top:3px;position:relative;top:2px;padding-bottom:3px;font-size:12px;width:calc(100% - 5px);'>" + this;
+                                      if (ss.length < 2) {
+                                        html += "</div><br />";
+                                      } else {
+                                        html += "<img src='http://85.214.165.56:81/coster/www/images/showright.png' style='margin-top: -3px;width:15px;max-height:20px;margin-left:5px;' /></spam></br>";
+                                      }
+                                    }
+
+                                  });
+                                  html += "<div style='display:none;font-size:10px;' compnamesdiv>" + row["CompName"].replace(/\|/g, "<br />") + "</div>";
+                                  html += "</div>";
+                              }
+                              if (row["Discount"] == "0" || row["Discount"] == "0%") {
+                                  html += "<span money style='font-size:12px;margin-left:0px;'>" + parseFloat(pr).toLocaleString("nl-NL", {
+                                      style: 'currency',
+                                      currency: cc
+                                  }) + "</span></div>";
+                                //  html += "<br /><span style='margin-left:0px;font-weight:bold;font-size:12px;'>" + row["ItemID"] + "</span>";
+
+                              } else {
+                                  html += "<div  money style='margin-left:0px;margin-top:0px;font-size:12px;'><span style='color:red;'>" + row["Discount"] + " </span><span style='text-decoration:line-through;'>" + parseFloat(pr).toLocaleString("nl-NL", {
+                                      style: 'currency',
+                                      currency: cc
+                                  }) + "</span>";
+                                  html += "<br /><span style=''>" + parseFloat(prc).toLocaleString("nl-NL", {
+                                      style: 'currency',
+                                      currency: cc
+                                  }) + "</span><br />" + "</div>";
+                              }
+
+                              html += "<span style='font-size:12px;position:absolute;bottom:5px;left:5px;'>" + row["ItemID"] + "</span>";
+                              return html;
                           }
 
+                      }
+
+                  }, {
+                      data: "MainGroup"
+                  }, {
+                      data: "SalesPrice"
+                  }, {
+                      data: "Discount"
+                  }, {
+                      data: "Warehouse"
+                  }, {
+                      data: "BrandID"
+                  }, {
+                      data: "CutID"
+                  }, {
+                      data: "TypeID"
+                  }, {
+                      data: "SerialNo"
+                  }, {
+                      data: "OnhandQnt"
+                  }, {
+                      data: "CompName"
+                  }, {
+                      data: "ColorDesc"
+                  }, {
+                      data: "ClarityID"
+                  }, {
+                      data: "ColourID"
+                  }, {
+                      data: "Qnt"
+                  },{
+                      data: "TotalWeight"
+                  },{
+                      data: "SerialName"
+                  }],
+                  "stateSave": true,
+                  "initComplete": function() {
+
+
+                    var whouses = [];
+                    $.ajax({
+                        url: "http://85.214.165.56:81/api/index.php?request=getWarehouses&tn=" + localStorage.view_table,
+                        type: "GEt",
+                        dataType: "JSON",
+                        success: function(res) {
+                            $.each(res, function() {
+                                if (this.Warehouse != null) {
+                                    whouses.push({
+                                        value: this.Warehouse + "`",
+                                        label: this.Warehouse
+                                    })
+                                }
+                            });
+
+                        }
+                    })
+
+                    var brands = [];
+                    $.ajax({
+                        url: "http://85.214.165.56:81/api/index.php?request=getBrands&tn=" + localStorage.view_table,
+                        type: "GEt",
+                        dataType: "JSON",
+                        success: function(res) {
+                          if ($("#brand_options").find(".options_item").length == 0) {
+                            $.each(res, function() {
+                                if (this.BrandID != null) {
+                               $("<div class='options_item'><span vl='" + this.BrandID + "`'" + " style='float:left;'>" + this.BrandID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled  type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#brand_options"));
+                                    brands.push({
+                                        value: this.BrandID + "`",
+                                        label: this.BrandID
+                                    })
+                                }
+                            });
+
+                        }
+                      }
+                    })
+                    var cuts = [];
+                    api.call("getCuts", function(res) {
+                        if ($("#cut_options").find(".options_item").length == 0) {
+                        $.each(res, function() {
+                          cuts = [];
+                            if (this.CutID != null && this.CutID != "") {
+                              $("<div class='options_item'><span vl='" + this.CutID + "`'" + " style='float:left;'>" + this.CutID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#cut_options"));
+
+                                cuts.push({
+                                    value: this.CutID + "`",
+                                    label: this.CutID
+                                })
+                            }
                         });
-                        html += "<div style='display:none;font-size:10px;' compnamesdiv>" + row["CompName"].replace(/\|/g, "<br />") + "</div>";
-                        html += "</div>";
-                    }
-                    if (row["Discount"] == "0" || row["Discount"] == "0%") {
-                        html += "<span money style='font-size:12px;margin-left:0px;'>" + parseFloat(pr).toLocaleString("nl-NL", {
-                            style: 'currency',
-                            currency: cc
-                        }) + "</span></div>";
-                      //  html += "<br /><span style='margin-left:0px;font-weight:bold;font-size:12px;'>" + row["ItemID"] + "</span>";
+                      }
+                    }, {
+                        table: localStorage.view_table
+                    }, {}, {});
 
-                    } else {
-                        html += "<div  money style='margin-left:0px;margin-top:0px;font-size:12px;'><span style='color:red;'>" + row["Discount"] + " </span><span style='text-decoration:line-through;'>" + parseFloat(pr).toLocaleString("nl-NL", {
-                            style: 'currency',
-                            currency: cc
-                        }) + "</span>";
-                        html += "<br /><span style=''>" + parseFloat(prc).toLocaleString("nl-NL", {
-                            style: 'currency',
-                            currency: cc
-                        }) + "</span><br />" + "</div>";
-                    }
+                    var clarity = [];
+                    api.call("getClarity", function(res) {
+                        if ($("#clarity_options").find(".options_item").length == 0) {
+                        $.each(res, function() {
 
-                    html += "<span style='font-size:12px;position:absolute;bottom:5px;left:5px;'>" + row["ItemID"] + "</span>";
-                    return html;
-                }
+                            clarity = [];
+                            if (this.ClarityID != null && this.ClarityID != "") {
+                              $("<div class='options_item'><span vl='" + this.ClarityID + "`'" + " style='float:left;'>" + this.ClarityID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#clarity_options"));
 
-            }
+                                clarity.push({
+                                    value: this.ClarityID + "`",
+                                    label: this.ClarityID.replace("?", "é")
+                                })
+                            }
+                        });
+                      }
+                    }, {
+                         table: localStorage.view_table
+                    }, {}, {});
 
-        }, {
-            data: "MainGroup"
-        }, {
-            data: "SalesPrice"
-        }, {
-            data: "Discount"
-        }, {
-            data: "Warehouse"
-        }, {
-            data: "BrandID"
-        }, {
-            data: "CutID"
-        }, {
-            data: "TypeID"
-        }, {
-            data: "SerialNo"
-        }, {
-            data: "OnhandQnt"
-        }, {
-            data: "CompName"
-        }, {
-            data: "ColorDesc"
-        }, {
-            data: "ClarityID"
-        }, {
-            data: "ColourID"
-        }, {
-            data: "Qnt"
-        },{
-            data: "TotalWeight"
-        },{
-            data: "SerialName"
-        }],
-        "stateSave": true,
-        "initComplete": function() {
-          var whouses = [];
-          $.ajax({
-              url: "http://85.214.165.56:81/api/index.php?request=getWarehouses",
-              type: "GEt",
-              dataType: "JSON",
-              success: function(res) {
+                    var colors = [];
+                    api.call("getColors", function(res) {
+                        if ($("#colour_options").find(".options_item").length == 0) {
+                      colors = [];
+                        $.each(res, function() {
+                            if (this.ColourID != null && this.ColourID != "") {
+                              $("<div class='options_item'><span vl='" + this.ColourID + "`'" + " style='float:left;'>" + this.ColourID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#colour_options"));
+                              colors.push({
+                                    value: this.ColourID + "`",
+                                    label: this.ColourID
+                                })
+                            }
+                        });
+                      }
+                    }, {
+                        table: localStorage.view_table
+                    }, {}, {});
+                    var types = [];
+                    api.call("getTypes", function(res) {
+                      types = [];
+                        if ($("#types_options").find(".options_item").length == 0) {
+                        $.each(res, function() {
+                            if (this.TypeID != null && this.TypeID != "") {
+                              $("<div class='options_item'><span vl='" + this.TypeID + "`'" + " style='float:left;'>" + this.TypeID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#types_options"));
 
-                  $.each(res, function() {
-                      if (this.Warehouse != null) {
-                          whouses.push({
-                              value: this.Warehouse + "`",
-                              label: this.Warehouse
+                                types.push({
+                                    value: this.TypeID + "`",
+                                    label: this.TypeID
+                                })
+                            }
+                        });
+                      }
+                    }, {
+                        table: localStorage.view_table
+                    }, {}, {});
+
+                    var mgroups = [];
+                    $.ajax({
+                        url: "http://85.214.165.56:81/api/index.php?request=getExcangeRates",
+                        type: "GEt",
+                        dataType: "JSON",
+                        success: function(res) {
+                            $.each(res, function() {
+                                $('<option value="' + this.CurrencyCode + '" rate="' + (parseFloat(this.ExchangeRate) / 100) + '">' + this.Currency + '</option>').appendTo($("#currency"));
+                            })
+                            $("#currency").bind("change", function() {
+
+                              if (localStorage.currency !== undefined) {
+                                if (localStorage.currency != $("#currency").val()) {
+                                  catalogTable.draw();
+                                //  localStorage.currency = $("#currency").val();
+                                }
+                              }
+                            })
+                            if (localStorage.currency === undefined) {
+                                $("#currency").val("EUR");
+                                localStorage.currency = "EUR";
+                                $("#currency").trigger("change");
+                            } else {
+
+                                $("#currency").val(localStorage.currency);
+                                $("#currency").trigger("change");
+                            }
+                        }
+                    })
+
+
+
+                    $.ajax({
+                        url: "http://85.214.165.56:81/api/index.php?request=getMainGroups&tn=" + localStorage.view_table,
+                        type: "GEt",
+                        dataType: "JSON",
+                        success: function(res) {
+                          if ($("#maingroup_options").find(".options_item").length == 0) {
+                            mgroups = [];
+                            $.each(res, function(ind) {
+                                if (this.MainGroup != null) {
+                                  $("<div class='options_item'><span vl='" + this.MainGroup + "`'" + " style='float:left;'>" + this.MainGroup + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt id='mg_" + ind + "' disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#maingroup_options"));
+                                //  $('').appendTo($("#maingroup_options"));
+                                $("[what='" + this.MainGroup + "']").css({
+                                  display: "flex"
+                                })
+                                    mgroups.push({
+                                        value: this.MainGroup + "`",
+                                        label: this.MainGroup
+                                    })
+                                }
+                            });
+                          }
+                        }
+                    })
+                    var materials = [];
+                    $.ajax({
+                        url: "http://85.214.165.56:81/api/index.php?request=getMaterials&tn=" + localStorage.view_table,
+                        type: "GEt",
+                        dataType: "JSON",
+                        success: function(res) {
+                          if ($("#material_options").find(".options_item").length == 0) {
+                            materials = [];
+                            $.each(res, function(ind) {
+                              if (this.ColorDesc !== undefined) {
+                                this.colorDesc = this.ColorDesc;
+                              }
+                                if (this.colorDesc != null) {
+                                  var dv = $("<div class='options_item'><span vl='" + this.colorDesc + "`'" + " style='float:left;'>" + this.colorDesc + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt id='mg_" + ind + "' disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#material_options"));
+
+                                    materials.push({
+                                        value: this.colorDesc + "`",
+                                        label: this.colorDesc
+                                    })
+                                }
+                            });
+                          }
+                        }
+                    })
+
+                    setTimeout(function() {
+
+                        yadcf.init(catalogTable, [{
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_serial",
+                                    filter_type: "text",
+                                    column_number: 0,
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_serial_no",
+                                    filter_type: "text",
+                                    column_number: 11,
+                                }, {
+                                    style_class: "form-control",
+                                    filter_type: "text",
+                                    column_number: 2,
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_group",
+                                    column_number: 4,
+                                    data: mgroups,
+                                    filter_type: "multi_select",
+                                    select_type: 'select2'
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_material",
+                                    column_number: 14,
+                                    data: materials,
+                                    filter_type: "multi_select",
+                                    select_type: 'select2'
+                                },{
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_cut",
+                                    column_number: 9,
+                                    data: cuts,
+                                    filter_type: "multi_select",
+                                    select_type: 'select2'
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_clarity",
+                                    column_number: 15,
+                                    data: clarity,
+                                    filter_type: "multi_select",
+                                    select_type: 'select2'
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_color",
+                                    column_number: 16,
+                                    data: colors,
+                                    filter_type: "multi_select",
+                                    select_type: 'select2'
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_type",
+                                    column_number: 10,
+                                    data: types,
+                                    filter_type: "multi_select",
+                                    select_type: 'select2'
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_brand",
+                                    column_number: 8,
+                                    data: brands,
+                                    filter_type: "multi_select",
+                                    select_type: 'select2'
+                                }, {
+
+                                    filter_container_id: "filter_price",
+                                    column_number: 5,
+                                    filter_type: "range_number",
+                                    filter_delay: 500
+                                }, {
+
+                                    filter_container_id: "filter_stones",
+                                    column_number: 17,
+                                    filter_type: "range_number",
+                                    filter_delay: 500
+                                },{
+
+                                    filter_container_id: "filter_weight",
+                                    column_number: 18,
+                                    filter_type: "range_number",
+                                    filter_delay: 500
+                                },{
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_discount",
+                                    data: [{
+                                        value: "!discount=0",
+                                        label: "No discount"
+                                    }, {
+                                        value: "!discount>0!",
+                                        label: "Discount"
+                                    }],
+                                    column_number: 6
+                                }, {
+                                    style_class: "form-control",
+                                    filter_container_id: "filter_warehouse",
+                                    column_number: 7,
+                                    filter_type: "text",
+                                },
+
+                            ],
+                          {   externally_triggered: true}
+                        );
+
+                        $("#yadcf-filter--products-5").find("option").eq(0).text("Discount yes/no");
+                        $("#filters_temp").appendTo($("#filters_body"));
+                        $("#filters_temp").css({
+                            visibility: "visible"
+                        })
+                        // here nowrap
+                        $.each($(".options_item"), function() {
+                          var dv = $(this);
+                          $(this).unbind("click");
+                        });
+                        $.each($(".options_item"), function() {
+                          var dv = $(this);
+                          dv.bind("click", function() {
+                            var dv = $(this).closest(".options_item");
+                            dv.find("[opt]")[0].checked = !dv.find("[opt]")[0].checked;
+                            if (dv.find("[opt]")[0].checked) {
+                              dv.find("[opt]").addClass("checked");
+                            } else {
+                              dv.find("[opt]").removeClass("checked");
+                            }
+                          //  alert($(this).find("[opt]")[0].onchange);
                           })
-                      }
-                  });
+                          $("#fil").show();
 
-              }
-          })
+                        })
 
-          var brands = [];
-          $.ajax({
-              url: "http://85.214.165.56:81/api/index.php?request=getBrands",
-              type: "GEt",
-              dataType: "JSON",
-              success: function(res) {
 
-                  $.each(res, function() {
-                      if (this.BrandID != null) {
-                     $("<div class='options_item'><span vl='" + this.BrandID + "`'" + " style='float:left;'>" + this.BrandID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled  type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#brand_options"));
-                          brands.push({
-                              value: this.BrandID + "`",
-                              label: this.BrandID
-                          })
-                      }
-                  });
+                        collectFilters();
 
-              }
-          })
-          var cuts = [];
-          api.call("getCuts", function(res) {
-              $.each(res, function() {
-                  if (this.CutID != null && this.CutID != "") {
-                    $("<div class='options_item'><span vl='" + this.CutID + "`'" + " style='float:left;'>" + this.CutID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#cut_options"));
-
-                      cuts.push({
-                          value: this.CutID + "`",
-                          label: this.CutID
-                      })
+                  //here
+                }, 100);
                   }
-              });
-          }, {
-              table: "products_search"
-          }, {}, {});
-
-          var clarity = [];
-          api.call("getClarity", function(res) {
-
-              $.each(res, function() {
-                  if (this.ClarityID != null && this.ClarityID != "") {
-                    $("<div class='options_item'><span vl='" + this.ClarityID + "`'" + " style='float:left;'>" + this.ClarityID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#clarity_options"));
-
-                      clarity.push({
-                          value: this.ClarityID + "`",
-                          label: this.ClarityID.replace("?", "é")
-                      })
-                  }
-              });
-          }, {
-              table: "products_search"
-          }, {}, {});
-
-          var colors = [];
-          api.call("getColors", function(res) {
-              $.each(res, function() {
-                  if (this.ColourID != null && this.ColourID != "") {
-                    $("<div class='options_item'><span vl='" + this.ColourID + "`'" + " style='float:left;'>" + this.ColourID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#colour_options"));
-                    colors.push({
-                          value: this.ColourID + "`",
-                          label: this.ColourID
-                      })
-                  }
-              });
-          }, {
-              table: "products_search"
-          }, {}, {});
-          var types = [];
-          api.call("getTypes", function(res) {
-              $.each(res, function() {
-                  if (this.TypeID != null && this.TypeID != "") {
-                    $("<div class='options_item'><span vl='" + this.TypeID + "`'" + " style='float:left;'>" + this.TypeID + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt  disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#types_options"));
-
-                      types.push({
-                          value: this.TypeID + "`",
-                          label: this.TypeID
-                      })
-                  }
-              });
-          }, {
-              table: "products_search"
-          }, {}, {});
-
-          var mgroups = [];
-          $.ajax({
-              url: "http://85.214.165.56:81/api/index.php?request=getExcangeRates",
-              type: "GEt",
-              dataType: "JSON",
-              success: function(res) {
-                  $.each(res, function() {
-                      $('<option value="' + this.CurrencyCode + '" rate="' + (parseFloat(this.ExchangeRate) / 100) + '">' + this.Currency + '</option>').appendTo($("#currency"));
-                  })
-                  $("#currency").bind("change", function() {
-
-                    if (localStorage.currency !== undefined) {
-                      if (localStorage.currency != $("#currency").val()) {
-                        catalogTable.draw();
-                      //  localStorage.currency = $("#currency").val();
-                      }
-                    }
-                  })
-                  if (localStorage.currency === undefined) {
-                      $("#currency").val("EUR");
-                      localStorage.currency = "EUR";
-                      $("#currency").trigger("change");
-                  } else {
-
-                      $("#currency").val(localStorage.currency);
-                      $("#currency").trigger("change");
-                  }
-              }
-          })
-
-
-
-          $.ajax({
-              url: "http://85.214.165.56:81/api/index.php?request=getMainGroups",
-              type: "GEt",
-              dataType: "JSON",
-              success: function(res) {
-                  $.each(res, function(ind) {
-                      if (this.MainGroup != null) {
-                        $("<div class='options_item'><span vl='" + this.MainGroup + "`'" + " style='float:left;'>" + this.MainGroup + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt id='mg_" + ind + "' disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#maingroup_options"));
-                        $('').appendTo($("#maingroup_options"));
-                          mgroups.push({
-                              value: this.MainGroup + "`",
-                              label: this.MainGroup
-                          })
-                      }
-                  });
-              }
-          })
-          var materials = [];
-          $.ajax({
-              url: "http://85.214.165.56:81/api/index.php?request=getMaterials",
-              type: "GEt",
-              dataType: "JSON",
-              success: function(res) {
-                  $.each(res, function(ind) {
-
-                      if (this.colorDesc != null) {
-                        var dv = $("<div class='options_item'><span vl='" + this.colorDesc + "`'" + " style='float:left;'>" + this.colorDesc + "<span><span  style='float:right;font-size:12px;margin-top:0px;margin-left:10px;'><div class='pretty p-switch p-fill' style='float:right;margin-top:5px;'><input opt id='mg_" + ind + "' disabled type='checkbox'  /><div class='state p-success' style='width:30px;'> <label></label></div></div></span></div>").appendTo($("#material_options"));
-
-                          materials.push({
-                              value: this.colorDesc + "`",
-                              label: this.colorDesc
-                          })
-                      }
-                  });
-              }
-          })
-
-          setTimeout(function() {
-
-              yadcf.init(catalogTable, [{
-                          style_class: "form-control",
-                          filter_container_id: "filter_serial",
-                          filter_type: "text",
-                          column_number: 0,
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_serial_no",
-                          filter_type: "text",
-                          column_number: 11,
-                      }, {
-                          style_class: "form-control",
-                          filter_type: "text",
-                          column_number: 2,
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_group",
-                          column_number: 4,
-                          data: mgroups,
-                          filter_type: "multi_select",
-                          select_type: 'select2'
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_material",
-                          column_number: 14,
-                          data: materials,
-                          filter_type: "multi_select",
-                          select_type: 'select2'
-                      },{
-                          style_class: "form-control",
-                          filter_container_id: "filter_cut",
-                          column_number: 9,
-                          data: cuts,
-                          filter_type: "multi_select",
-                          select_type: 'select2'
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_clarity",
-                          column_number: 15,
-                          data: clarity,
-                          filter_type: "multi_select",
-                          select_type: 'select2'
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_color",
-                          column_number: 16,
-                          data: colors,
-                          filter_type: "multi_select",
-                          select_type: 'select2'
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_type",
-                          column_number: 10,
-                          data: types,
-                          filter_type: "multi_select",
-                          select_type: 'select2'
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_brand",
-                          column_number: 8,
-                          data: brands,
-                          filter_type: "multi_select",
-                          select_type: 'select2'
-                      }, {
-
-                          filter_container_id: "filter_price",
-                          column_number: 5,
-                          filter_type: "range_number",
-                          filter_delay: 500
-                      }, {
-
-                          filter_container_id: "filter_stones",
-                          column_number: 17,
-                          filter_type: "range_number",
-                          filter_delay: 500
-                      },{
-
-                          filter_container_id: "filter_weight",
-                          column_number: 18,
-                          filter_type: "range_number",
-                          filter_delay: 500
-                      },{
-                          style_class: "form-control",
-                          filter_container_id: "filter_discount",
-                          data: [{
-                              value: "!discount=0",
-                              label: "No discount"
-                          }, {
-                              value: "!discount>0!",
-                              label: "Discount"
-                          }],
-                          column_number: 6
-                      }, {
-                          style_class: "form-control",
-                          filter_container_id: "filter_warehouse",
-                          column_number: 7,
-                          filter_type: "text",
-                      },
-
-                  ],
-                {   externally_triggered: true}
-              );
-
-              $("#yadcf-filter--products-5").find("option").eq(0).text("Discount yes/no");
-              $("#filters_temp").appendTo($("#filters_body"));
-              $("#filters_temp").css({
-                  visibility: "visible"
               })
-              // here nowrap
-              $.each($(".options_item"), function() {
-                var dv = $(this);
-                $(this).unbind("click");
-              });
-              $.each($(".options_item"), function() {
-                var dv = $(this);
-                dv.bind("click", function() {
-                  var dv = $(this).closest(".options_item");
-                  dv.find("[opt]")[0].checked = !dv.find("[opt]")[0].checked;
-                  if (dv.find("[opt]")[0].checked) {
-                    dv.find("[opt]").addClass("checked");
-                  } else {
-                    dv.find("[opt]").removeClass("checked");
-                  }
-                //  alert($(this).find("[opt]")[0].onchange);
-                })
-                $("#fil").show();
-
-              })
-
-
-              collectFilters();
-
-        //here
-      }, 100);
-        }
-    })
-    catalogTable.on( 'xhr', function () {
-        var json = catalogTable.ajax.json();
-        lastSQL = json.sql;
-    } );
-//    }, {stateid: "1594745388924"}, {}, {})
+              catalogTable.on( 'xhr', function () {
+                  var json = catalogTable.ajax.json();
+                  lastSQL = json.sql;
+              } );
+    //  }, ss, {}, {});
+  //  }, {stateid: "default"}, {}, {})
     catalogTable.on('search.dt', function() {
         $("#items_div").attr("sheight", $("#items_div").height());
         $("#items_div").html("");
 
     });
 function collectFilters() {
-  /*$("#items_div").css({
-    visibility: "hidden"
-  })*/
-  $("#items_div").hide();
-  var dtimeout = null;
-    yadcf.exResetAllFilters(catalogTable);
-  var ld = "default";
 
-  if (window.location.hash.indexOf("?") > -1) {
-    ld = window.location.hash.split("?")[1];
-  }
-
-  var fltr = [0,11,2,4,14,9,15,16,10,8,5,17,18,6,7];
-  api.call("getWebState", function(res) {
-    if (res.length == 0) {
-      collectFilters1()
-    } else {
-        var dt = $.parseJSON(res.state);
-        $.each(dt.columns, function(ind) {
-          if (fltr.indexOf(ind) > -1) {
-
-          if (this.search["search"] != "" && this.search["search"] != "-yadcf_delim-")
-        //    yadcf.exResetFilters(catalogTable, [ind]);
-            if (this.search["search"].indexOf("-yadcf_delim-") > -1) {
-              var fr = this.search["search"].substring(0,this.search["search"].indexOf("-"));
-              var t = this.search["search"].substring(this.search["search"].lastIndexOf("-") + 1);
-              var obj = {
-                from: fr,
-                to: t
-              };
-
-              yadcf.exFilterColumn(catalogTable, [[ind, obj]]);
-            } else {
-              std = this.search["search"].split("|");
-              yadcf.exFilterColumn(catalogTable, [[ind, std]]);
-            }
-          }
-        });
-        collectFilters1();
-    }
-  }, {stateid: ld}, {}, {});
+  $("#items_div").show();
+  collectFilters1();
 
 }
 
@@ -2056,12 +2049,12 @@ function fireClosest(obj) {
 //  $(obj).closest(".executefilters").find(".btn-black").trigger("click");
 }
 function fireShareState(media) {
-  alert(media)
   var st = catalogTable.state();
   var id = st.time;
+  var tn = "view_" + (new Date()).getTime();
   showModal({
-    title: "Enter share message text",
-    content: "<input id='statetext' placeholder='Share text' style='font-size: 17px;width:100%' />",
+    title: "Enter collection name (one word)",
+    content: "<input id='statetext' placeholder='Collection name' style='font-size: 17px;width:100%' />",
     allowBackdrop: false,
     showCancelButton: false,
     confirmButtonText: "SHARE",
@@ -2071,9 +2064,10 @@ function fireShareState(media) {
         text: $("#statetext").val(),
         state: (JSON.stringify(st)),
         url: "",
-        sqlstring: btoa(lastSQL)
+        sqlstring: btoa(lastSQL),
+        name: $("#statetext").val(),
       }
-      alert(JSON.stringify(obj));
+      console.log(obj);
       api.call("insertWebState", function(res) {
         if (res.status == "ok") {
           $.each($("#shareState").find("[data-url]"), function() {
